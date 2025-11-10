@@ -13,6 +13,7 @@ export default function RootLayout() {
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="demos/button-tap" options={{ headerShown: true }} />
         <Stack.Screen name="demos/audio-validation" options={{ headerShown: true }} />
         <Stack.Screen name="demos/test-demo" options={{ headerShown: true }} />
       </Stack>
