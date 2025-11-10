@@ -15,7 +15,6 @@ export default function RootLayout() {
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="demos/button-tap" options={{ headerShown: true }} />
         <Stack.Screen name="demos/audio-validation" options={{ headerShown: true }} />
-        <Stack.Screen name="demos/test-demo" options={{ headerShown: true }} />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>

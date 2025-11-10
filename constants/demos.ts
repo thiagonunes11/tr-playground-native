@@ -19,11 +19,4 @@ export const DEMOS: Demo[] = [
     icon: 'volume-high-outline',
     route: '/demos/audio-validation',
   },
-  {
-    id: 'test-demo',
-    title: 'Test Demo',
-    description: 'A working demo to test navigation and layout',
-    icon: 'flask-outline',
-    route: '/demos/test-demo',
-  },
 ];
