@@ -6,6 +6,13 @@ import { Demo } from '@/types/demo';
  */
 export const DEMOS: Demo[] = [
   {
+    id: 'audio-validation',
+    title: 'Audio Validation',
+    description: 'Validate audio playback functionality',
+    icon: 'volume-high-outline',
+    route: '/demos/audio-validation',
+  },
+  {
     id: 'test-demo',
     title: 'Test Demo',
     description: 'A working demo to test navigation and layout',
