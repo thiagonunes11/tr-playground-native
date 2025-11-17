@@ -14,7 +14,12 @@ export default function RootLayout() {
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="demos/button-tap" options={{ headerShown: true }} />
+        <Stack.Screen name="demos/camera-validation" options={{ headerShown: true }} />
+        <Stack.Screen name="demos/checkbox-interaction" options={{ headerShown: true }} />
         <Stack.Screen name="demos/audio-validation" options={{ headerShown: true }} />
+        <Stack.Screen name="demos/delete-elements" options={{ headerShown: true, title: 'Delete Elements' }} />
+        <Stack.Screen name="demos/date-picker" options={{ headerShown: true, title: 'Date Picker' }} />
+        <Stack.Screen name="demos/dynamic-login" options={{ headerShown: true, title: 'Dynamic Login Text' }} />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
