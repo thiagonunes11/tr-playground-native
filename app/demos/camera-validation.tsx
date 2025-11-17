@@ -16,11 +16,15 @@ export default function CameraValidationScreen() {
   };
 
   const openCamera = async () => {
+    let permissionGranted = hasPermission;
+    
     if (hasPermission === null) {
-      await requestPermissions();
+      const { status } = await Camera.requestCameraPermissionsAsync();
+      permissionGranted = status === 'granted';
+      setHasPermission(permissionGranted);
     }
 
-    if (hasPermission) {
+    if (permissionGranted) {
       setIsCameraActive(true);
       setPhotoTaken(false);
     } else {
