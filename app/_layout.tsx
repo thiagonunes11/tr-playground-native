@@ -20,6 +20,8 @@ export default function RootLayout() {
         <Stack.Screen name="demos/delete-elements" options={{ headerShown: true, title: 'Delete Elements' }} />
         <Stack.Screen name="demos/date-picker" options={{ headerShown: true, title: 'Date Picker' }} />
         <Stack.Screen name="demos/dynamic-login" options={{ headerShown: true, title: 'Dynamic Login Text' }} />
+        <Stack.Screen name="demos/swipe-horizontal" options={{ headerShown: true, title: 'Swipe Horizontal' }} />
+        <Stack.Screen name="demos/swipe-vertical" options={{ headerShown: true, title: 'Swipe Vertical' }} />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>

@@ -54,4 +54,18 @@ export const DEMOS: Demo[] = [
     icon: 'key-outline',
     route: '/demos/dynamic-login',
   },
+  {
+    id: 'swipe-horizontal',
+    title: 'Swipe Horizontal',
+    description: 'Test horizontal swipe gestures',
+    icon: 'swap-horizontal-outline',
+    route: '/demos/swipe-horizontal',
+  },
+  {
+    id: 'swipe-vertical',
+    title: 'Swipe Vertical',
+    description: 'Test vertical swipe gestures',
+    icon: 'swap-vertical-outline',
+    route: '/demos/swipe-vertical',
+  },
 ];
