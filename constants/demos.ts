@@ -68,4 +68,11 @@ export const DEMOS: Demo[] = [
     icon: 'swap-vertical-outline',
     route: '/demos/swipe-vertical',
   },
+  {
+    id: 'counter',
+    title: 'Counter',
+    description: 'Simple counter with increment/decrement',
+    icon: 'calculator-outline',
+    route: '/demos/counter',
+  },
 ];
