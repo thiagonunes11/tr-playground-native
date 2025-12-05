@@ -75,4 +75,11 @@ export const DEMOS: Demo[] = [
     icon: 'calculator-outline',
     route: '/demos/counter',
   },
+  {
+    id: 'api-validation',
+    title: 'API Validation',
+    description: 'Test HTTP methods with real API endpoints',
+    icon: 'cloud-outline',
+    route: '/demos/api-validation',
+  },
 ];
