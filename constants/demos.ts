@@ -68,4 +68,18 @@ export const DEMOS: Demo[] = [
     icon: 'swap-vertical-outline',
     route: '/demos/swipe-vertical',
   },
+  {
+    id: 'counter',
+    title: 'Counter',
+    description: 'Simple counter with increment/decrement',
+    icon: 'calculator-outline',
+    route: '/demos/counter',
+  },
+  {
+    id: 'api-validation',
+    title: 'API Validation',
+    description: 'Test HTTP methods with real API endpoints',
+    icon: 'cloud-outline',
+    route: '/demos/api-validation',
+  },
 ];
