@@ -89,4 +89,11 @@ export const DEMOS: Demo[] = [
     icon: 'basket-outline',
     route: '/demos/shopping-cart',
   },
+  {
+    id: 'file-download',
+    title: 'File Download',
+    description: 'Download files and validate download functionality',
+    icon: 'download-outline',
+    route: '/demos/file-download',
+  },
 ];
