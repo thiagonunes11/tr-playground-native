@@ -97,6 +97,13 @@ export const DEMOS: Demo[] = [
     route: '/demos/file-download',
   },
   {
+    id: 'file-upload',
+    title: 'File Upload',
+    description: 'Select and upload files to test upload functionality',
+    icon: 'cloud-upload-outline',
+    route: '/demos/file-upload',
+  },
+  {
     id: 'ocr-check',
     title: 'OCR Check',
     description: 'Use OCR to check for the content of the page',

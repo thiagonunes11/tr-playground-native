@@ -26,6 +26,7 @@ export default function RootLayout() {
         <Stack.Screen name="demos/api-validation" options={{ headerShown: true, title: 'API Validation' }} />
         <Stack.Screen name="demos/shopping-cart" options={{ headerShown: true, title: 'Shopping Cart' }} />
         <Stack.Screen name="demos/file-download" options={{ headerShown: true, title: 'File Download' }} />
+        <Stack.Screen name="demos/file-upload" options={{ headerShown: true, title: 'File Upload' }} />
         <Stack.Screen name="demos/ocr-check" options={{ headerShown: true, title: 'OCR Check' }} />
       </Stack>
       <StatusBar style="auto" />
