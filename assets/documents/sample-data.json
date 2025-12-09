@@ -1,0 +1,35 @@
+{
+  "title": "Sample JSON Data",
+  "description": "This is a sample JSON file for testing file download functionality",
+  "version": "1.0.0",
+  "features": [
+    "File download",
+    "Progress tracking",
+    "Error handling",
+    "File management"
+  ],
+  "metadata": {
+    "created": "2025-12-09",
+    "size": "245 bytes",
+    "type": "application/json"
+  },
+  "testData": {
+    "users": [
+      {
+        "id": 1,
+        "name": "John Doe",
+        "email": "john@example.com"
+      },
+      {
+        "id": 2,
+        "name": "Jane Smith",
+        "email": "jane@example.com"
+      }
+    ],
+    "settings": {
+      "theme": "dark",
+      "notifications": true,
+      "language": "en"
+    }
+  }
+}

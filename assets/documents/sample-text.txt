@@ -1,0 +1,16 @@
+Sample Text Document
+==================
+
+This is a sample text file for testing file download functionality in the React Native playground app.
+
+Features tested:
+- File download from local assets
+- Progress tracking
+- Error handling
+- File management
+- Platform-specific file opening
+
+Created on: December 9, 2025
+File size: Approximately 256 bytes
+
+This document serves as a test file for the file download demo.

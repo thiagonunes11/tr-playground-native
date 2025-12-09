@@ -82,4 +82,32 @@ export const DEMOS: Demo[] = [
     icon: 'cloud-outline',
     route: '/demos/api-validation',
   },
+  {
+    id: 'shopping-cart',
+    title: 'Shopping Cart',
+    description: 'Add products, manage cart, and checkout',
+    icon: 'basket-outline',
+    route: '/demos/shopping-cart',
+  },
+  {
+    id: 'file-download',
+    title: 'File Download',
+    description: 'Download files and validate download functionality',
+    icon: 'download-outline',
+    route: '/demos/file-download',
+  },
+  {
+    id: 'file-upload',
+    title: 'File Upload',
+    description: 'Select and upload files to test upload functionality',
+    icon: 'cloud-upload-outline',
+    route: '/demos/file-upload',
+  },
+  {
+    id: 'ocr-check',
+    title: 'OCR Check',
+    description: 'Use OCR to check for the content of the page',
+    icon: 'eye-outline',
+    route: '/demos/ocr-check',
+  },
 ];
