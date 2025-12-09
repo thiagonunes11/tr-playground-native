@@ -96,4 +96,11 @@ export const DEMOS: Demo[] = [
     icon: 'download-outline',
     route: '/demos/file-download',
   },
+  {
+    id: 'ocr-check',
+    title: 'OCR Check',
+    description: 'Use OCR to check for the content of the page',
+    icon: 'eye-outline',
+    route: '/demos/ocr-check',
+  },
 ];
