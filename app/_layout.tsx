@@ -24,6 +24,7 @@ export default function RootLayout() {
         <Stack.Screen name="demos/swipe-vertical" options={{ headerShown: true, title: 'Swipe Vertical' }} />
         <Stack.Screen name="demos/counter" options={{ headerShown: true, title: 'Counter' }} />
         <Stack.Screen name="demos/api-validation" options={{ headerShown: true, title: 'API Validation' }} />
+        <Stack.Screen name="demos/shopping-cart" options={{ headerShown: true, title: 'Shopping Cart' }} />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>

@@ -82,4 +82,11 @@ export const DEMOS: Demo[] = [
     icon: 'cloud-outline',
     route: '/demos/api-validation',
   },
+  {
+    id: 'shopping-cart',
+    title: 'Shopping Cart',
+    description: 'Add products, manage cart, and checkout',
+    icon: 'basket-outline',
+    route: '/demos/shopping-cart',
+  },
 ];
