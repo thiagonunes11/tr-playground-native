@@ -7,16 +7,29 @@ node_modules/
 .expo/
 dist/
 web-build/
+.expo-shared/
 expo-env.d.ts
 
-# Native
+# EAS
+.eas/
+
+# Native builds
+*.apk
+*.aab
+*.ipa
+*.app.zip
+
+# Native caches
 .kotlin/
 *.orig.*
+
+# Certificates and keystores
 *.jks
 *.p8
 *.p12
 *.key
 *.mobileprovision
+*.pem
 
 # Metro
 .metro-health-check*
@@ -26,17 +39,35 @@ npm-debug.*
 yarn-debug.*
 yarn-error.*
 
+# Logs
+*.log
+
 # macOS
 .DS_Store
-*.pem
+
+# Windows
+Thumbs.db
 
 # local env files
-.env*.local
+.env
+.env.*
+!.env.example
 
 # typescript
 *.tsbuildinfo
 
-app-example
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Test coverage
+coverage/
+
+# Temporary files
+tmp/
+temp/
 
 # generated native folders
 /ios
