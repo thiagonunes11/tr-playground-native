@@ -19,6 +19,30 @@ The demo system consists of four key components:
 - Familiarity with Expo Router for navigation
 - Knowledge of NativeWind (Tailwind CSS) for styling
 
+## Running the App
+
+This project supports two development modes:
+
+| Command | Mode | Use when |
+|---|---|---|
+| `npm start` or `npm run start:go` | **Expo Go** | Quick iteration; most demos work out of the box |
+| `npm run start:dev` | **Development build** | After adding or updating native modules |
+
+Press **`s`** in the Metro terminal to switch between Expo Go and the development build.
+
+### Native modules
+
+Some demos use native APIs (camera, audio, notifications, etc.). After adding a package with native code:
+
+1. Run `npx expo run:android` or `npx expo run:ios` to rebuild the dev client
+2. Start Metro with `npm run start:dev`
+
+Expo Go includes most SDK 54 modules, but a custom dev build is required when native configuration changes (for example, adding the `expo-notifications` config plugin).
+
+### Expo Go version
+
+If Metro prompts to upgrade Expo Go and the download fails, install the recommended APK manually from [expo-go-releases](https://github.com/expo/expo-go-releases/releases) and answer **no** to the upgrade prompt.
+
 ## Step-by-Step Guide
 
 ### Step 1: Create the Demo Page
@@ -190,6 +214,25 @@ Demos appear on the home screen in the order they are defined in `constants/demo
 5. Tap the card to verify navigation works
 6. Test all interactive elements within your demo
 
+If your demo uses a native module, rebuild the dev client before testing:
+
+```bash
+npx expo run:android
+npm run start:dev
+```
+
+## Demos with Native Dependencies
+
+| Demo | Native package | Notes |
+|---|---|---|
+| Geo Location | `expo-location` | Requests foreground location permission; works in Expo Go. Rebuild dev client after first install. |
+| Camera Validation | `expo-camera` | Requires camera permission |
+| Audio Validation | `expo-audio` | Uses `useAudioPlayer` hooks |
+| Date Picker | `@react-native-community/datetimepicker` | Platform-native picker |
+| File Upload | `expo-document-picker` | Opens system file picker |
+| File Download | `expo-file-system` | Writes to device storage |
+| System Notification | `expo-notifications` | **Development build only** — not supported in Expo Go on Android (SDK 53+). Rebuild after adding the config plugin. |
+
 ## Common Issues
 
 ### Demo Not Appearing on Home Screen
@@ -222,6 +265,22 @@ Demos appear on the home screen in the order they are defined in `constants/demo
 ```bash
 npx expo start --clear
 ```
+
+### Cannot Find Native Module
+
+**Cause:** Development build was compiled before a native package was added
+
+**Solution:** Rebuild and use the dev client:
+```bash
+npx expo run:android
+npm run start:dev
+```
+
+### Expo Go fetch failed on Android
+
+**Cause:** Expo Go is not installed on the device/emulator, or Metro is in the wrong mode
+
+**Solution:** Install Expo Go SDK 54 on the emulator, or switch to development build with **`s`**
 
 ## Best Practices
 
@@ -317,6 +376,126 @@ export default function TextInputScreen() {
 ```tsx
 <Stack.Screen name="demos/text-input" options={{ headerShown: true }} />
 ```
+
+## Example: System Notification Demo
+
+The System Notification demo triggers an OS-level notification so automated testing tools must switch context (app → notification shade) to interact with it.
+
+> **Important:** This demo requires a **development build**. `expo-notifications` was removed from Expo Go on Android starting with SDK 53. Use `npm run start:dev`, not Expo Go.
+
+### Implementation notes
+
+- Uses `expo-notifications` with `scheduleNotificationAsync` and `trigger: null` for immediate delivery
+- **Lazy-loads** `expo-notifications` via dynamic `import()` so Expo Go does not crash on app startup — the module is only loaded in a development build when the demo is used
+- Requests notification permission on first use (required on Android 13+ and iOS)
+- Creates an Android notification channel before requesting permission
+- Uses predictable title/body text for test automation:
+  - **Title:** `testRigor Playground Notification`
+  - **Body:** `Tap this notification to validate context switching in your test automation.`
+- In-app trigger button has `testID="trigger-notification-button"`
+
+### Setup steps
+
+1. Install the package:
+
+```bash
+npx expo install expo-notifications
+```
+
+2. Add the config plugin to `app.json`:
+
+```json
+[
+  "expo-notifications",
+  {
+    "defaultChannel": "tr-playground-notifications"
+  }
+]
+```
+
+3. Create `app/demos/system-notification.tsx`, register in `constants/demos.ts` and `app/_layout.tsx`
+
+4. Rebuild the native app:
+
+```bash
+npx expo run:android
+```
+
+### Register in `constants/demos.ts`
+
+```typescript
+{
+  id: 'system-notification',
+  title: 'System Notification',
+  description: 'Trigger a system notification to test context switching',
+  icon: 'notifications-outline',
+  route: '/demos/system-notification',
+}
+```
+
+## Example: Geo Location Demo
+
+The Geo Location demo requests foreground location access and validates that returned coordinates are usable for test automation.
+
+### Implementation notes
+
+- Uses `expo-location` with `getCurrentPositionAsync` and `Accuracy.Balanced`
+- Requests foreground permission via `requestForegroundPermissionsAsync`
+- Validates coordinates are finite and within standard ranges (latitude ±90, longitude ±180)
+- Displays latitude, longitude, and accuracy with `testID`s for automation:
+  - `get-location-button`
+  - `location-latitude`
+  - `location-longitude`
+  - `location-accuracy`
+  - `location-validation-message`
+
+### Setup steps
+
+1. Install the package:
+
+```bash
+npx expo install expo-location
+```
+
+2. Add the config plugin to `app.json`:
+
+```json
+[
+  "expo-location",
+  {
+    "locationWhenInUsePermission": "Allow testRigor Playground to access your location for the geolocation demo."
+  }
+]
+```
+
+3. Create `app/demos/geo-location.tsx`, register in `constants/demos.ts` and `app/_layout.tsx`
+
+4. Rebuild the native app if using a development build:
+
+```bash
+npx expo run:android
+```
+
+### Register in `constants/demos.ts`
+
+```typescript
+{
+  id: 'geo-location',
+  title: 'Geo Location',
+  description: 'Enable geolocation and validate device coordinates',
+  icon: 'location-outline',
+  route: '/demos/geo-location',
+}
+```
+
+### Android emulator tip
+
+If you see "Current location is unavailable", set a mock location in the emulator:
+
+1. Open **Extended Controls** (⋯ button in the emulator toolbar)
+2. Go to **Location**
+3. Set latitude/longitude or pick a point on the map
+4. Tap **Get Location** again in the demo
 
 ## Additional Resources
 

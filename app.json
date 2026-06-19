@@ -39,6 +39,18 @@
         }
       ],
       "expo-audio",
+      [
+        "expo-notifications",
+        {
+          "defaultChannel": "tr-playground-notifications"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow testRigor Playground to access your location for the geolocation demo."
+        }
+      ],
       "@react-native-community/datetimepicker",
       "expo-font",
       "expo-web-browser"

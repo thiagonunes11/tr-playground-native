@@ -6,6 +6,20 @@ import { Demo } from '@/types/demo';
  */
 export const DEMOS: Demo[] = [
   {
+    id: 'geo-location',
+    title: 'Geo Location',
+    description: 'Enable geolocation and validate device coordinates',
+    icon: 'location-outline',
+    route: '/demos/geo-location',
+  },
+  {
+    id: 'system-notification',
+    title: 'System Notification',
+    description: 'Trigger a system notification to test context switching',
+    icon: 'notifications-outline',
+    route: '/demos/system-notification',
+  },
+  {
     id: 'button-tap',
     title: 'Button Tap',
     description: 'Validate button click functionality',
