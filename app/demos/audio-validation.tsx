@@ -1,72 +1,32 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Audio } from 'expo-av';
+import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { Stack } from 'expo-router';
-import { useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 
 export default function AudioValidationScreen() {
-  const [playingSampleA, setPlayingSampleA] = useState(false);
-  const [playingSampleB, setPlayingSampleB] = useState(false);
-  const [soundA, setSoundA] = useState<Audio.Sound | null>(null);
-  const [soundB, setSoundB] = useState<Audio.Sound | null>(null);
+  const playerA = useAudioPlayer(require('@/assets/audio/sampleA.mp3'));
+  const playerB = useAudioPlayer(require('@/assets/audio/sampleB.mp3'));
+  const statusA = useAudioPlayerStatus(playerA);
+  const statusB = useAudioPlayerStatus(playerB);
 
-  const playAudio = async (sample: 'A' | 'B') => {
-    try {
-      // Stop any currently playing audio
-      if (soundA) await soundA.stopAsync();
-      if (soundB) await soundB.stopAsync();
-      
-      if (sample === 'A') {
-        setPlayingSampleA(true);
-        setPlayingSampleB(false);
-        
-        const { sound } = await Audio.Sound.createAsync(
-          require('@/assets/audio/sampleA.mp3'),
-          { shouldPlay: true }
-        );
-        setSoundA(sound);
-        
-        sound.setOnPlaybackStatusUpdate((status) => {
-          if (status.isLoaded && status.didJustFinish) {
-            setPlayingSampleA(false);
-          }
-        });
-      } else {
-        setPlayingSampleB(true);
-        setPlayingSampleA(false);
-        
-        const { sound } = await Audio.Sound.createAsync(
-          require('@/assets/audio/sampleB.mp3'),
-          { shouldPlay: true }
-        );
-        setSoundB(sound);
-        
-        sound.setOnPlaybackStatusUpdate((status) => {
-          if (status.isLoaded && status.didJustFinish) {
-            setPlayingSampleB(false);
-          }
-        });
-      }
-    } catch (error) {
-      console.error('Error playing audio:', error);
-      setPlayingSampleA(false);
-      setPlayingSampleB(false);
-    }
+  const playingSampleA = statusA.playing;
+  const playingSampleB = statusB.playing;
+
+  const playAudio = (sample: 'A' | 'B') => {
+    const target = sample === 'A' ? playerA : playerB;
+    const other = sample === 'A' ? playerB : playerA;
+
+    other.pause();
+    other.seekTo(0);
+    target.seekTo(0);
+    target.play();
   };
 
-  const stopAudio = async () => {
-    if (soundA) {
-      await soundA.stopAsync();
-      await soundA.unloadAsync();
-      setSoundA(null);
-    }
-    if (soundB) {
-      await soundB.stopAsync();
-      await soundB.unloadAsync();
-      setSoundB(null);
-    }
-    setPlayingSampleA(false);
-    setPlayingSampleB(false);
+  const stopAudio = () => {
+    playerA.pause();
+    playerA.seekTo(0);
+    playerB.pause();
+    playerB.seekTo(0);
   };
 
   return (
