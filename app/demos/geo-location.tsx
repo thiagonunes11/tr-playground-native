@@ -16,9 +16,39 @@ interface LocationResult {
   latitude: number;
   longitude: number;
   accuracy: number | null;
+  address: string;
 }
 
-function toLocationResult(position: Location.LocationObject): LocationResult {
+function formatHumanLocation(address: Location.LocationGeocodedAddress): string {
+  if (address.formattedAddress) {
+    return address.formattedAddress;
+  }
+
+  const parts = [
+    address.city ?? address.district ?? address.subregion,
+    address.region,
+    address.country,
+  ].filter(Boolean);
+
+  return parts.join(', ') || 'Unknown location';
+}
+
+async function resolveHumanLocation(
+  location: Pick<LocationResult, 'latitude' | 'longitude'>
+): Promise<string> {
+  const [address] = await Location.reverseGeocodeAsync({
+    latitude: location.latitude,
+    longitude: location.longitude,
+  });
+
+  if (!address) {
+    return 'Unknown location';
+  }
+
+  return formatHumanLocation(address);
+}
+
+function toLocationResult(position: Location.LocationObject): Omit<LocationResult, 'address'> {
   return {
     latitude: position.coords.latitude,
     longitude: position.coords.longitude,
@@ -27,7 +57,7 @@ function toLocationResult(position: Location.LocationObject): LocationResult {
 }
 
 function validateLocation(location: LocationResult): { valid: boolean; message: string } {
-  const { latitude, longitude, accuracy } = location;
+  const { latitude, longitude, accuracy, address } = location;
 
   if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
     return { valid: false, message: 'Coordinates must be valid numbers.' };
@@ -45,9 +75,16 @@ function validateLocation(location: LocationResult): { valid: boolean; message: 
     return { valid: false, message: 'Accuracy must be greater than zero meters.' };
   }
 
+  if (!address || address === 'Unknown location') {
+    return {
+      valid: false,
+      message: 'Could not resolve a readable address for this location.',
+    };
+  }
+
   return {
     valid: true,
-    message: 'Location validated successfully. Coordinates are within expected ranges.',
+    message: 'Location validated successfully.',
   };
 }
 
@@ -87,26 +124,33 @@ async function fetchDeviceLocation(): Promise<LocationResult> {
     }
   }
 
+  let coords: Omit<LocationResult, 'address'>;
+
   const lastKnown = await Location.getLastKnownPositionAsync({
     maxAge: 300_000,
     requiredAccuracy: 5000,
   });
   if (lastKnown) {
-    return toLocationResult(lastKnown);
+    coords = toLocationResult(lastKnown);
+  } else {
+    try {
+      const position = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+      coords = toLocationResult(position);
+    } catch {
+      const fallback = await Location.getLastKnownPositionAsync();
+      if (fallback) {
+        coords = toLocationResult(fallback);
+      } else {
+        throw new Error('Current location is unavailable. Make sure that location services are enabled');
+      }
+    }
   }
 
-  try {
-    const position = await Location.getCurrentPositionAsync({
-      accuracy: Location.Accuracy.Balanced,
-    });
-    return toLocationResult(position);
-  } catch {
-    const fallback = await Location.getLastKnownPositionAsync();
-    if (fallback) {
-      return toLocationResult(fallback);
-    }
-    throw new Error('Current location is unavailable. Make sure that location services are enabled');
-  }
+  const address = await resolveHumanLocation(coords);
+
+  return { ...coords, address };
 }
 
 export default function GeoLocationScreen() {
@@ -191,10 +235,10 @@ export default function GeoLocationScreen() {
               </View>
             </View>
             <Text className="text-base text-gray-600 leading-6">
-              Enable geolocation and validate that the device returns valid coordinates.
+              Enable geolocation and validate that the device returns a readable location.
             </Text>
           </View>
-
+{/*
           {Platform.OS === 'android' && (
             <View className="bg-blue-50 rounded-2xl p-4 mb-6 border-2 border-blue-100">
               <View className="flex-row items-start">
@@ -206,7 +250,7 @@ export default function GeoLocationScreen() {
               </View>
             </View>
           )}
-
+*/}
           <View className="bg-white rounded-2xl p-6 border-2 border-gray-100">
             <Text className="text-lg font-semibold text-black mb-4">
               Get Current Location
@@ -287,12 +331,9 @@ export default function GeoLocationScreen() {
 
             {location && (
               <View className="mt-6 bg-gray-50 rounded-xl p-4 border border-gray-200">
-                <Text className="text-sm text-gray-600 mb-3">Current coordinates:</Text>
-                <Text testID="location-latitude" className="text-base text-black mb-1">
-                  Latitude: {location.latitude.toFixed(6)}
-                </Text>
-                <Text testID="location-longitude" className="text-base text-black mb-1">
-                  Longitude: {location.longitude.toFixed(6)}
+                <Text className="text-sm text-gray-600 mb-3">Current location:</Text>
+                <Text testID="location-address" className="text-lg font-semibold text-black mb-2">
+                  {location.address}
                 </Text>
                 {location.accuracy !== null && (
                   <Text testID="location-accuracy" className="text-sm text-gray-600">

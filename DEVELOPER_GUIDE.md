@@ -442,10 +442,10 @@ The Geo Location demo requests foreground location access and validates that ret
 - Uses `expo-location` with `getCurrentPositionAsync` and `Accuracy.Balanced`
 - Requests foreground permission via `requestForegroundPermissionsAsync`
 - Validates coordinates are finite and within standard ranges (latitude ±90, longitude ±180)
+- Reverse-geocodes coordinates into a human-readable address (city, state, country)
 - Displays latitude, longitude, and accuracy with `testID`s for automation:
   - `get-location-button`
-  - `location-latitude`
-  - `location-longitude`
+  - `location-address`
   - `location-accuracy`
   - `location-validation-message`
 
