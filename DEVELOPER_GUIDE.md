@@ -30,6 +30,69 @@ This project supports two development modes:
 
 Press **`s`** in the Metro terminal to switch between Expo Go and the development build.
 
+### Android emulator (recommended workflow)
+
+Fresh Android emulators do not ship with Expo Go. Pressing **`a`** asks the CLI to download and install it automatically; if that download fails you will see `TypeError: fetch failed` and the app will not open.
+
+Use this workflow on the emulator:
+
+```bash
+# 1. Forward Metro port from the emulator to your machine
+adb reverse tcp:8081 tcp:8081
+
+# 2. Start Metro in localhost mode (avoids LAN IP issues on emulators)
+npx expo start --localhost
+
+# 3. Press a to open on Android
+```
+
+**Install Expo Go manually** when the automatic download fails or the emulator has no internet:
+
+1. Download the APK for SDK 54 from [expo-go-releases](https://github.com/expo/expo-go-releases/releases) (e.g. `Expo-Go-54.0.8.apk`).
+2. Install on the running emulator:
+
+```bash
+adb install -r ~/Downloads/Expo-Go-54.0.8.apk
+```
+
+3. Confirm the package is present:
+
+```bash
+adb shell pm list packages | grep host.exp.exponent
+```
+
+4. If Metro is already running, open the project directly:
+
+```bash
+adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.exp.exponent
+```
+
+**Emulator has no internet:** If the emulator cannot reach the network (common after long sessions), cold boot it in Android Studio (**Device Manager → ⋮ → Cold Boot Now**) and run `adb reverse` again.
+
+### macOS: Watchman and `~/Documents`
+
+If Metro crashes on startup with:
+
+```text
+Watchman error: ... Operation not permitted
+```
+
+the project is likely under `~/Documents`, which macOS restricts unless Watchman has **Full Disk Access**.
+
+This repo disables Watchman in `metro.config.js` so Metro uses the Node file crawler instead:
+
+```js
+config.resolver = {
+  ...config.resolver,
+  useWatchman: false,
+};
+```
+
+A `.watchmanconfig` file also exists at the project root. To use Watchman again (faster file watching on large projects), either:
+
+- Grant **Full Disk Access** to Terminal/Cursor and `watchman` in **System Settings → Privacy & Security**, or
+- Move the repository outside `~/Documents` (e.g. `~/Developer/tr-playground-native`).
+
 ### Native modules
 
 Some demos use native APIs (camera, audio, notifications, etc.). After adding a package with native code:
@@ -41,7 +104,9 @@ Expo Go includes most SDK 54 modules, but a custom dev build is required when na
 
 ### Expo Go version
 
-If Metro prompts to upgrade Expo Go and the download fails, install the recommended APK manually from [expo-go-releases](https://github.com/expo/expo-go-releases/releases) and answer **no** to the upgrade prompt.
+This project targets **Expo SDK 54**. The matching Expo Go build is **54.0.x** (see [expo-go-releases](https://github.com/expo/expo-go-releases/releases)).
+
+If Metro prompts to upgrade Expo Go and the automatic download fails, install the recommended APK manually and answer **no** to the upgrade prompt. Cached APKs from a successful CLI download are stored under `~/.expo/android-apk-cache/`.
 
 ## Step-by-Step Guide
 
@@ -277,11 +342,27 @@ npx expo run:android
 npm run start:dev
 ```
 
-### Expo Go fetch failed on Android
+### Metro crashes with Watchman "Operation not permitted" (macOS)
 
-**Cause:** Expo Go is not installed on the device/emulator, or Metro is in the wrong mode
+**Cause:** Watchman cannot read the project directory (common when the repo lives in `~/Documents`).
 
-**Solution:** Install Expo Go SDK 54 on the emulator, or switch to development build with **`s`**
+**Solution:** Already handled in `metro.config.js` via `resolver.useWatchman: false`. If the error persists, restart Metro with `npx expo start --clear`. To re-enable Watchman, grant Full Disk Access or move the project out of `~/Documents`.
+
+### `TypeError: fetch failed` when pressing `a` (Android)
+
+**Cause:** Expo Go is not installed on the emulator and the CLI could not download it (network, firewall, or offline emulator).
+
+**Solution:**
+
+1. Install Expo Go 54.x manually — see [Android emulator (recommended workflow)](#android-emulator-recommended-workflow).
+2. Run `adb reverse tcp:8081 tcp:8081` and start Metro with `npx expo start --localhost`.
+3. Or switch to a development build with **`s`** and use `npm run start:dev`.
+
+### No apps connected / reload failed
+
+**Cause:** Expo Go is not running or Metro URL is unreachable from the device.
+
+**Solution:** Open the app on the emulator first (`a` or the `adb shell am start` command above). For emulators, prefer `--localhost` plus `adb reverse` instead of the LAN IP (`exp://192.168.x.x:8081`).
 
 ## Best Practices
 
