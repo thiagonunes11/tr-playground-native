@@ -15,6 +15,7 @@ export default function RootLayout() {
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack>
           <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="demos/web-view" options={{ headerShown: true, title: 'WebView' }} />
           <Stack.Screen name="demos/geo-location" options={{ headerShown: true, title: 'Geo Location' }} />
           <Stack.Screen name="demos/system-notification" options={{ headerShown: true, title: 'System Notification' }} />
           <Stack.Screen name="demos/button-tap" options={{ headerShown: true, title: 'Button Tap' }} />

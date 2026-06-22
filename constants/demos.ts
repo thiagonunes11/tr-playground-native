@@ -6,6 +6,13 @@ import { Demo } from '@/types/demo';
  */
 export const DEMOS: Demo[] = [
   {
+    id: 'web-view',
+    title: 'WebView',
+    description: 'Open a simple embedded WebView in the app',
+    icon: 'globe-outline',
+    route: '/demos/web-view',
+  },
+  {
     id: 'geo-location',
     title: 'Geo Location',
     description: 'Enable geolocation and validate device coordinates',

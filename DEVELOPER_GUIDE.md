@@ -225,6 +225,7 @@ npm run start:dev
 
 | Demo | Native package | Notes |
 |---|---|---|
+| WebView | `react-native-webview` | Embedded browser; works in Expo Go |
 | Geo Location | `expo-location` | Requests foreground location permission; works in Expo Go. Rebuild dev client after first install. |
 | Camera Validation | `expo-camera` | Requires camera permission |
 | Audio Validation | `expo-audio` | Uses `useAudioPlayer` hooks |
