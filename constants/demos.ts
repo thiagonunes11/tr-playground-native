@@ -20,11 +20,11 @@ export const DEMOS: Demo[] = [
     route: '/demos/geo-location',
   },
   {
-    id: 'system-notification',
-    title: 'System Notification',
-    description: 'Trigger a system notification to test context switching',
-    icon: 'notifications-outline',
-    route: '/demos/system-notification',
+    id: 'system-context',
+    title: 'System Context Switch',
+    description: 'Trigger native system UI to validate context switching in tests',
+    icon: 'layers-outline',
+    route: '/demos/system-context',
   },
   {
     id: 'button-tap',

@@ -297,7 +297,7 @@ npm run start:dev
 | Date Picker | `@react-native-community/datetimepicker` | Platform-native picker |
 | File Upload | `expo-document-picker` | Opens system file picker |
 | File Download | `expo-file-system` | Writes to device storage |
-| System Notification | `expo-notifications` | **Development build only** — not supported in Expo Go on Android (SDK 53+). Rebuild after adding the config plugin. |
+| System Context Switch | `expo-notifications` (notifications only) | Notifications need a **development build** on Android (SDK 53+). Browser, settings, and share sheet work in Expo Go. |
 
 ## Common Issues
 
@@ -459,22 +459,33 @@ export default function TextInputScreen() {
 <Stack.Screen name="demos/text-input" options={{ headerShown: true }} />
 ```
 
-## Example: System Notification Demo
+## Example: System Context Switch Demo
 
-The System Notification demo triggers an OS-level notification so automated testing tools must switch context (app → notification shade) to interact with it.
+The System Context Switch demo triggers native UI that lives **outside** the app. Unlike the WebView demo (embedded browser, same app context), these scenarios force automated testing tools to switch context — for example, app → notification shade, app → system browser, app → settings, or app → share sheet.
 
-> **Important:** This demo requires a **development build**. `expo-notifications` was removed from Expo Go on Android starting with SDK 53. Use `npm run start:dev`, not Expo Go.
+> **Important:** Notification scenarios require a **development build** on Android. `expo-notifications` was removed from Expo Go on Android starting with SDK 53. Browser, settings, and share sheet scenarios work in Expo Go.
+
+### Scenarios and predictable content
+
+| Scenario | Trigger `testID` | Expected system content |
+|---|---|---|
+| Single notification | `trigger-notification-button` | Title: `testRigor Context Switch`, body: `Validate notification shade context switching` |
+| Notification stack | `trigger-notification-stack-button` | Titles: `testRigor Notification A`, `B`, `C` |
+| External browser | `open-external-browser-button` | URL: `https://testrigorplayground.netlify.app` |
+| App settings | `open-app-settings-button` | OS settings screen for testRigor Playground |
+| Share sheet | `open-share-sheet-button` | Message: `testRigor Playground: validate share sheet context switch` |
+
+Each trigger button has a companion status element with `testID="{trigger-testID}-triggered"` after the scenario runs.
 
 ### Implementation notes
 
-- Uses `expo-notifications` with `scheduleNotificationAsync` and `trigger: null` for immediate delivery
-- **Lazy-loads** `expo-notifications` via dynamic `import()` so Expo Go does not crash on app startup — the module is only loaded in a development build when the demo is used
-- Requests notification permission on first use (required on Android 13+ and iOS)
-- Creates an Android notification channel before requesting permission
-- Uses predictable title/body text for test automation:
-  - **Title:** `testRigor Playground Notification`
-  - **Body:** `Tap this notification to validate context switching in your test automation.`
-- In-app trigger button has `testID="trigger-notification-button"`
+- Notifications use `expo-notifications` with `scheduleNotificationAsync` and `trigger: null` for immediate delivery
+- **Lazy-loads** `expo-notifications` via dynamic `import()` so Expo Go does not crash on startup
+- External browser uses `Linking.openURL` (leaves the app entirely, unlike the embedded WebView demo)
+- App settings uses `Linking.openSettings()`
+- Share sheet uses React Native `Share.share()` with fixed title and message for automation
+- Notification permission status: `testID="notification-permission-status"`
+- Validation hint: `testID="context-switch-validation-hint"`
 
 ### Setup steps
 
@@ -495,9 +506,9 @@ npx expo install expo-notifications
 ]
 ```
 
-3. Create `app/demos/system-notification.tsx`, register in `constants/demos.ts` and `app/_layout.tsx`
+3. Create `app/demos/system-context.tsx`, register in `constants/demos.ts` and `app/_layout.tsx`
 
-4. Rebuild the native app:
+4. Rebuild the native app (required for notifications on Android):
 
 ```bash
 npx expo run:android
@@ -507,11 +518,11 @@ npx expo run:android
 
 ```typescript
 {
-  id: 'system-notification',
-  title: 'System Notification',
-  description: 'Trigger a system notification to test context switching',
-  icon: 'notifications-outline',
-  route: '/demos/system-notification',
+  id: 'system-context',
+  title: 'System Context Switch',
+  description: 'Trigger native system UI to validate context switching in tests',
+  icon: 'layers-outline',
+  route: '/demos/system-context',
 }
 ```
 
