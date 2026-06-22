@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Stack } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 
@@ -9,19 +9,54 @@ const EXPECTED_PAGE_TITLE = 'testRigor Playground';
 
 export default function WebViewScreen() {
   const [isWebViewOpen, setIsWebViewOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [pageLoaded, setPageLoaded] = useState(false);
+  const [currentUrl, setCurrentUrl] = useState(WEBVIEW_URL);
+  const [currentTitle, setCurrentTitle] = useState(EXPECTED_PAGE_TITLE);
+  const hasFinishedInitialLoad = useRef(false);
 
   const handleOpenWebView = () => {
     setIsWebViewOpen(true);
-    setIsLoading(true);
+    setIsInitialLoading(true);
     setPageLoaded(false);
+    setCurrentUrl(WEBVIEW_URL);
+    setCurrentTitle(EXPECTED_PAGE_TITLE);
+    hasFinishedInitialLoad.current = false;
   };
 
   const handleCloseWebView = () => {
     setIsWebViewOpen(false);
-    setIsLoading(true);
+    setIsInitialLoading(true);
     setPageLoaded(false);
+    hasFinishedInitialLoad.current = false;
+  };
+
+  const handleNavigationStateChange = (navState: {
+    url: string;
+    title?: string;
+    loading: boolean;
+  }) => {
+    setCurrentUrl(navState.url);
+
+    if (navState.title) {
+      setCurrentTitle(navState.title);
+    }
+
+    if (!navState.loading) {
+      setPageLoaded(true);
+      if (!hasFinishedInitialLoad.current) {
+        hasFinishedInitialLoad.current = true;
+        setIsInitialLoading(false);
+      }
+    }
+  };
+
+  const handleLoadEnd = () => {
+    setPageLoaded(true);
+    if (!hasFinishedInitialLoad.current) {
+      hasFinishedInitialLoad.current = true;
+      setIsInitialLoading(false);
+    }
   };
 
   if (isWebViewOpen) {
@@ -37,7 +72,7 @@ export default function WebViewScreen() {
         <View className="flex-1 bg-white">
           <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200">
             <Text className="text-sm text-gray-600 flex-1 mr-3" numberOfLines={1}>
-              {WEBVIEW_URL}
+              {currentUrl}
             </Text>
             <Pressable
               testID="close-webview-button"
@@ -49,7 +84,7 @@ export default function WebViewScreen() {
             </Pressable>
           </View>
 
-          {isLoading && (
+          {isInitialLoading && (
             <View className="absolute inset-0 items-center justify-center bg-white z-10">
               <ActivityIndicator size="large" color="#3B82F6" />
               <Text className="text-gray-600 mt-3">Loading page...</Text>
@@ -59,24 +94,23 @@ export default function WebViewScreen() {
           <WebView
             testID="demo-webview"
             source={{ uri: WEBVIEW_URL }}
-            onLoadStart={() => setIsLoading(true)}
-            onLoadEnd={() => {
-              setIsLoading(false);
-              setPageLoaded(true);
-            }}
+            startInLoadingState
+            onNavigationStateChange={handleNavigationStateChange}
+            onLoadEnd={handleLoadEnd}
             onError={() => {
-              setIsLoading(false);
+              setIsInitialLoading(false);
               setPageLoaded(false);
+              hasFinishedInitialLoad.current = true;
             }}
             className="flex-1"
           />
 
-          {pageLoaded && !isLoading && (
+          {pageLoaded && !isInitialLoading && (
             <View className="bg-green-50 border-t border-green-200 px-4 py-3">
               <View className="flex-row items-center">
                 <Ionicons name="checkmark-circle" size={20} color="#22C55E" />
                 <Text testID="webview-loaded-message" className="text-green-800 font-medium ml-2">
-                  Page loaded: {EXPECTED_PAGE_TITLE}
+                  Page loaded: {currentTitle}
                 </Text>
               </View>
             </View>
