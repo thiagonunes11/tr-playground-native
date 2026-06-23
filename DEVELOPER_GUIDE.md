@@ -19,6 +19,95 @@ The demo system consists of four key components:
 - Familiarity with Expo Router for navigation
 - Knowledge of NativeWind (Tailwind CSS) for styling
 
+## Running the App
+
+This project supports two development modes:
+
+| Command | Mode | Use when |
+|---|---|---|
+| `npm start` or `npm run start:go` | **Expo Go** | Quick iteration; most demos work out of the box |
+| `npm run start:dev` | **Development build** | After adding or updating native modules |
+
+Press **`s`** in the Metro terminal to switch between Expo Go and the development build.
+
+### Android emulator (recommended workflow)
+
+Fresh Android emulators do not ship with Expo Go. Pressing **`a`** asks the CLI to download and install it automatically; if that download fails you will see `TypeError: fetch failed` and the app will not open.
+
+Use this workflow on the emulator:
+
+```bash
+# 1. Forward Metro port from the emulator to your machine
+adb reverse tcp:8081 tcp:8081
+
+# 2. Start Metro in localhost mode (avoids LAN IP issues on emulators)
+npx expo start --localhost
+
+# 3. Press a to open on Android
+```
+
+**Install Expo Go manually** when the automatic download fails or the emulator has no internet:
+
+1. Download the APK for SDK 54 from [expo-go-releases](https://github.com/expo/expo-go-releases/releases) (e.g. `Expo-Go-54.0.8.apk`).
+2. Install on the running emulator:
+
+```bash
+adb install -r ~/Downloads/Expo-Go-54.0.8.apk
+```
+
+3. Confirm the package is present:
+
+```bash
+adb shell pm list packages | grep host.exp.exponent
+```
+
+4. If Metro is already running, open the project directly:
+
+```bash
+adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081" host.exp.exponent
+```
+
+**Emulator has no internet:** If the emulator cannot reach the network (common after long sessions), cold boot it in Android Studio (**Device Manager → ⋮ → Cold Boot Now**) and run `adb reverse` again.
+
+### macOS: Watchman and `~/Documents`
+
+If Metro crashes on startup with:
+
+```text
+Watchman error: ... Operation not permitted
+```
+
+the project is likely under `~/Documents`, which macOS restricts unless Watchman has **Full Disk Access**.
+
+This repo disables Watchman in `metro.config.js` so Metro uses the Node file crawler instead:
+
+```js
+config.resolver = {
+  ...config.resolver,
+  useWatchman: false,
+};
+```
+
+A `.watchmanconfig` file also exists at the project root. To use Watchman again (faster file watching on large projects), either:
+
+- Grant **Full Disk Access** to Terminal/Cursor and `watchman` in **System Settings → Privacy & Security**, or
+- Move the repository outside `~/Documents` (e.g. `~/Developer/tr-playground-native`).
+
+### Native modules
+
+Some demos use native APIs (camera, audio, notifications, etc.). After adding a package with native code:
+
+1. Run `npx expo run:android` or `npx expo run:ios` to rebuild the dev client
+2. Start Metro with `npm run start:dev`
+
+Expo Go includes most SDK 54 modules, but a custom dev build is required when native configuration changes (for example, adding the `expo-notifications` config plugin).
+
+### Expo Go version
+
+This project targets **Expo SDK 54**. The matching Expo Go build is **54.0.x** (see [expo-go-releases](https://github.com/expo/expo-go-releases/releases)).
+
+If Metro prompts to upgrade Expo Go and the automatic download fails, install the recommended APK manually and answer **no** to the upgrade prompt. Cached APKs from a successful CLI download are stored under `~/.expo/android-apk-cache/`.
+
 ## Step-by-Step Guide
 
 ### Step 1: Create the Demo Page
@@ -190,6 +279,26 @@ Demos appear on the home screen in the order they are defined in `constants/demo
 5. Tap the card to verify navigation works
 6. Test all interactive elements within your demo
 
+If your demo uses a native module, rebuild the dev client before testing:
+
+```bash
+npx expo run:android
+npm run start:dev
+```
+
+## Demos with Native Dependencies
+
+| Demo | Native package | Notes |
+|---|---|---|
+| WebView | `react-native-webview` | Embedded browser; works in Expo Go |
+| Geo Location | `expo-location` | Requests foreground location permission; works in Expo Go. Rebuild dev client after first install. |
+| Camera Validation | `expo-camera` | Requires camera permission |
+| Audio Validation | `expo-audio` | Uses `useAudioPlayer` hooks |
+| Date Picker | `@react-native-community/datetimepicker` | Platform-native picker |
+| File Upload | `expo-document-picker` | Opens system file picker |
+| File Download | `expo-file-system` | Writes to device storage |
+| External Browser | — | Uses `Linking.openURL`; works in Expo Go |
+
 ## Common Issues
 
 ### Demo Not Appearing on Home Screen
@@ -222,6 +331,38 @@ Demos appear on the home screen in the order they are defined in `constants/demo
 ```bash
 npx expo start --clear
 ```
+
+### Cannot Find Native Module
+
+**Cause:** Development build was compiled before a native package was added
+
+**Solution:** Rebuild and use the dev client:
+```bash
+npx expo run:android
+npm run start:dev
+```
+
+### Metro crashes with Watchman "Operation not permitted" (macOS)
+
+**Cause:** Watchman cannot read the project directory (common when the repo lives in `~/Documents`).
+
+**Solution:** Already handled in `metro.config.js` via `resolver.useWatchman: false`. If the error persists, restart Metro with `npx expo start --clear`. To re-enable Watchman, grant Full Disk Access or move the project out of `~/Documents`.
+
+### `TypeError: fetch failed` when pressing `a` (Android)
+
+**Cause:** Expo Go is not installed on the emulator and the CLI could not download it (network, firewall, or offline emulator).
+
+**Solution:**
+
+1. Install Expo Go 54.x manually — see [Android emulator (recommended workflow)](#android-emulator-recommended-workflow).
+2. Run `adb reverse tcp:8081 tcp:8081` and start Metro with `npx expo start --localhost`.
+3. Or switch to a development build with **`s`** and use `npm run start:dev`.
+
+### No apps connected / reload failed
+
+**Cause:** Expo Go is not running or Metro URL is unreachable from the device.
+
+**Solution:** Open the app on the emulator first (`a` or the `adb shell am start` command above). For emulators, prefer `--localhost` plus `adb reverse` instead of the LAN IP (`exp://192.168.x.x:8081`).
 
 ## Best Practices
 
@@ -317,6 +458,118 @@ export default function TextInputScreen() {
 ```tsx
 <Stack.Screen name="demos/text-input" options={{ headerShown: true }} />
 ```
+
+## Example: External Browser Demo
+
+The External Browser demo opens the device default browser (Chrome, Safari, etc.) outside the app using `Linking.openURL`. Pair it with the **WebView** demo to exercise both browser contexts in testRigor:
+
+| Demo | Where content runs | testRigor context |
+|---|---|---|
+| WebView | Embedded browser inside the app | `native` (default) |
+| External Browser | Device browser app | `browser` after `switch context to browser` |
+
+In testRigor, `switch context to native` targets the mobile app. `switch context to browser` targets the mobile browser content. Use these commands when a test crosses the app ↔ browser boundary — not for system overlays like the notification shade or share sheet, which testRigor handles in the default flow.
+
+### Predictable content and testIDs
+
+| Element | `testID` | Expected value |
+|---|---|---|
+| Open browser button | `open-external-browser-button` | — |
+| Browser URL label | `external-browser-url` | `https://testrigorplayground.netlify.app` |
+| Expected page title | `external-browser-expected-title` | `testRigor Playground` |
+| Native context marker | `native-context-marker` | `Native app context marker` |
+
+### Sample testRigor flow
+
+```
+tap "Open External Browser"
+switch context to browser
+validate page contains "testRigor Playground"
+switch context to native
+validate page contains "Native app context marker"
+```
+
+### Implementation notes
+
+- Uses `Linking.openURL` — leaves the app entirely (unlike the embedded WebView demo)
+- No extra native packages required; works in Expo Go
+- The native marker stays on screen when the user returns to the app
+
+### Register in `constants/demos.ts`
+
+```typescript
+{
+  id: 'external-browser',
+  title: 'External Browser',
+  description: 'Open the device browser outside the app for native vs browser context tests',
+  icon: 'open-outline',
+  route: '/demos/external-browser',
+}
+```
+
+## Example: Geo Location Demo
+
+The Geo Location demo requests foreground location access and validates that returned coordinates are usable for test automation.
+
+### Implementation notes
+
+- Uses `expo-location` with `getCurrentPositionAsync` and `Accuracy.Balanced`
+- Requests foreground permission via `requestForegroundPermissionsAsync`
+- Validates coordinates are finite and within standard ranges (latitude ±90, longitude ±180)
+- Reverse-geocodes coordinates into a human-readable address (city, state, country)
+- Displays latitude, longitude, and accuracy with `testID`s for automation:
+  - `get-location-button`
+  - `location-address`
+  - `location-accuracy`
+  - `location-validation-message`
+
+### Setup steps
+
+1. Install the package:
+
+```bash
+npx expo install expo-location
+```
+
+2. Add the config plugin to `app.json`:
+
+```json
+[
+  "expo-location",
+  {
+    "locationWhenInUsePermission": "Allow testRigor Playground to access your location for the geolocation demo."
+  }
+]
+```
+
+3. Create `app/demos/geo-location.tsx`, register in `constants/demos.ts` and `app/_layout.tsx`
+
+4. Rebuild the native app if using a development build:
+
+```bash
+npx expo run:android
+```
+
+### Register in `constants/demos.ts`
+
+```typescript
+{
+  id: 'geo-location',
+  title: 'Geo Location',
+  description: 'Enable geolocation and validate device coordinates',
+  icon: 'location-outline',
+  route: '/demos/geo-location',
+}
+```
+
+### Android emulator tip
+
+If you see "Current location is unavailable", set a mock location in the emulator:
+
+1. Open **Extended Controls** (⋯ button in the emulator toolbar)
+2. Go to **Location**
+3. Set latitude/longitude or pick a point on the map
+4. Tap **Get Location** again in the demo
 
 ## Additional Resources
 

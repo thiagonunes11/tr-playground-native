@@ -6,6 +6,27 @@ import { Demo } from '@/types/demo';
  */
 export const DEMOS: Demo[] = [
   {
+    id: 'web-view',
+    title: 'WebView',
+    description: 'Open a simple embedded WebView in the app',
+    icon: 'globe-outline',
+    route: '/demos/web-view',
+  },
+  {
+    id: 'geo-location',
+    title: 'Geo Location',
+    description: 'Enable geolocation and validate device coordinates',
+    icon: 'location-outline',
+    route: '/demos/geo-location',
+  },
+  {
+    id: 'external-browser',
+    title: 'External Browser',
+    description: 'Open the device browser outside the app for native vs browser context tests',
+    icon: 'open-outline',
+    route: '/demos/external-browser',
+  },
+  {
     id: 'button-tap',
     title: 'Button Tap',
     description: 'Validate button click functionality',
