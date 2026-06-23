@@ -27,25 +27,28 @@ testRigor Playground is a mobile application designed to provide interactive dem
 
 ## ✨ Features
 
-### Available Demos (15 total)
+### Available Demos (18 total)
 
-| Demo                        | Description                                    |
-| --------------------------- | ---------------------------------------------- |
-| 🖱️ **Button Tap**           | Validate button click functionality            |
-| 📷 **Camera Validation**    | Test camera functionality and photo capture    |
-| ☑️ **Checkbox Interaction** | Validate checkbox selection and interaction    |
-| 🔊 **Audio Validation**     | Test audio playback functionality              |
-| 🗑️ **Delete Elements**      | Add and delete elements from a list            |
-| 📅 **Date Picker**          | Choose dates and validate picker functionality |
-| 🔑 **Dynamic Login**        | Login form with random button text             |
-| ↔️ **Swipe Horizontal**     | Test horizontal swipe gestures                 |
-| ↕️ **Swipe Vertical**       | Test vertical swipe gestures                   |
-| 🔢 **Counter**              | Simple counter with increment/decrement        |
-| 🌐 **API Validation**       | Test HTTP methods with real API endpoints      |
-| 🛒 **Shopping Cart**        | Full e-commerce flow with cart management      |
-| 📥 **File Download**        | Download files and validate functionality      |
-| 📤 **File Upload**          | Select and upload files                        |
-| 👁️ **OCR Check**            | Image-based OCR validation                     |
+| Demo                        | Description                                              |
+| --------------------------- | -------------------------------------------------------- |
+| 🌐 **WebView**              | Embedded browser inside the app                          |
+| 📍 **Geo Location**         | Request location and validate coordinates                |
+| 🔗 **External Browser**     | Open device browser for native vs browser context tests  |
+| 🖱️ **Button Tap**           | Validate button click functionality                      |
+| 📷 **Camera Validation**    | Test camera functionality and photo capture              |
+| ☑️ **Checkbox Interaction** | Validate checkbox selection and interaction              |
+| 🔊 **Audio Validation**     | Test audio playback functionality                        |
+| 🗑️ **Delete Elements**      | Add and delete elements from a list                      |
+| 📅 **Date Picker**          | Choose dates and validate picker functionality           |
+| 🔑 **Dynamic Login**        | Login form with random button text                       |
+| ↔️ **Swipe Horizontal**     | Test horizontal swipe gestures                           |
+| ↕️ **Swipe Vertical**       | Test vertical swipe gestures                             |
+| 🔢 **Counter**              | Simple counter with increment/decrement                  |
+| 🌐 **API Validation**       | Test HTTP methods with real API endpoints                |
+| 🛒 **Shopping Cart**        | Full e-commerce flow with cart management                |
+| 📥 **File Download**        | Download files and validate functionality                  |
+| 📤 **File Upload**          | Select and upload files                                  |
+| 👁️ **OCR Check**            | Image-based OCR validation                               |
 
 ## 🛠️ Tech Stack
 

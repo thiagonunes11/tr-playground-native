@@ -20,11 +20,11 @@ export const DEMOS: Demo[] = [
     route: '/demos/geo-location',
   },
   {
-    id: 'system-context',
-    title: 'System Context Switch',
-    description: 'Trigger native system UI to validate context switching in tests',
-    icon: 'layers-outline',
-    route: '/demos/system-context',
+    id: 'external-browser',
+    title: 'External Browser',
+    description: 'Open the device browser outside the app for native vs browser context tests',
+    icon: 'open-outline',
+    route: '/demos/external-browser',
   },
   {
     id: 'button-tap',

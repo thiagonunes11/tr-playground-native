@@ -297,7 +297,7 @@ npm run start:dev
 | Date Picker | `@react-native-community/datetimepicker` | Platform-native picker |
 | File Upload | `expo-document-picker` | Opens system file picker |
 | File Download | `expo-file-system` | Writes to device storage |
-| System Context Switch | `expo-notifications` (notifications only) | Notifications need a **development build** on Android (SDK 53+). Browser, settings, and share sheet work in Expo Go. |
+| External Browser | — | Uses `Linking.openURL`; works in Expo Go |
 
 ## Common Issues
 
@@ -459,70 +459,51 @@ export default function TextInputScreen() {
 <Stack.Screen name="demos/text-input" options={{ headerShown: true }} />
 ```
 
-## Example: System Context Switch Demo
+## Example: External Browser Demo
 
-The System Context Switch demo triggers native UI that lives **outside** the app. Unlike the WebView demo (embedded browser, same app context), these scenarios force automated testing tools to switch context — for example, app → notification shade, app → system browser, app → settings, or app → share sheet.
+The External Browser demo opens the device default browser (Chrome, Safari, etc.) outside the app using `Linking.openURL`. Pair it with the **WebView** demo to exercise both browser contexts in testRigor:
 
-> **Important:** Notification scenarios require a **development build** on Android. `expo-notifications` was removed from Expo Go on Android starting with SDK 53. Browser, settings, and share sheet scenarios work in Expo Go.
-
-### Scenarios and predictable content
-
-| Scenario | Trigger `testID` | Expected system content |
+| Demo | Where content runs | testRigor context |
 |---|---|---|
-| Single notification | `trigger-notification-button` | Title: `testRigor Context Switch`, body: `Validate notification shade context switching` |
-| Notification stack | `trigger-notification-stack-button` | Titles: `testRigor Notification A`, `B`, `C` |
-| External browser | `open-external-browser-button` | URL: `https://testrigorplayground.netlify.app` |
-| App settings | `open-app-settings-button` | OS settings screen for testRigor Playground |
-| Share sheet | `open-share-sheet-button` | Message: `testRigor Playground: validate share sheet context switch` |
+| WebView | Embedded browser inside the app | `native` (default) |
+| External Browser | Device browser app | `browser` after `switch context to browser` |
 
-Each trigger button has a companion status element with `testID="{trigger-testID}-triggered"` after the scenario runs.
+In testRigor, `switch context to native` targets the mobile app. `switch context to browser` targets the mobile browser content. Use these commands when a test crosses the app ↔ browser boundary — not for system overlays like the notification shade or share sheet, which testRigor handles in the default flow.
+
+### Predictable content and testIDs
+
+| Element | `testID` | Expected value |
+|---|---|---|
+| Open browser button | `open-external-browser-button` | — |
+| Browser URL label | `external-browser-url` | `https://testrigorplayground.netlify.app` |
+| Expected page title | `external-browser-expected-title` | `testRigor Playground` |
+| Native context marker | `native-context-marker` | `Native app context marker` |
+
+### Sample testRigor flow
+
+```
+tap "Open External Browser"
+switch context to browser
+validate page contains "testRigor Playground"
+switch context to native
+validate page contains "Native app context marker"
+```
 
 ### Implementation notes
 
-- Notifications use `expo-notifications` with `scheduleNotificationAsync` and `trigger: null` for immediate delivery
-- **Lazy-loads** `expo-notifications` via dynamic `import()` so Expo Go does not crash on startup
-- External browser uses `Linking.openURL` (leaves the app entirely, unlike the embedded WebView demo)
-- App settings uses `Linking.openSettings()`
-- Share sheet uses React Native `Share.share()` with fixed title and message for automation
-- Notification permission status: `testID="notification-permission-status"`
-- Validation hint: `testID="context-switch-validation-hint"`
-
-### Setup steps
-
-1. Install the package:
-
-```bash
-npx expo install expo-notifications
-```
-
-2. Add the config plugin to `app.json`:
-
-```json
-[
-  "expo-notifications",
-  {
-    "defaultChannel": "tr-playground-notifications"
-  }
-]
-```
-
-3. Create `app/demos/system-context.tsx`, register in `constants/demos.ts` and `app/_layout.tsx`
-
-4. Rebuild the native app (required for notifications on Android):
-
-```bash
-npx expo run:android
-```
+- Uses `Linking.openURL` — leaves the app entirely (unlike the embedded WebView demo)
+- No extra native packages required; works in Expo Go
+- The native marker stays on screen when the user returns to the app
 
 ### Register in `constants/demos.ts`
 
 ```typescript
 {
-  id: 'system-context',
-  title: 'System Context Switch',
-  description: 'Trigger native system UI to validate context switching in tests',
-  icon: 'layers-outline',
-  route: '/demos/system-context',
+  id: 'external-browser',
+  title: 'External Browser',
+  description: 'Open the device browser outside the app for native vs browser context tests',
+  icon: 'open-outline',
+  route: '/demos/external-browser',
 }
 ```
 
