@@ -165,50 +165,6 @@ export default function DeepLinkScreen() {
               )}
             </View>
           </View>
-
-          {/* CLI Automation Commands Guide */}
-          <View className="bg-white rounded-2xl p-6 border-2 border-gray-100">
-            <View className="flex-row items-center mb-3">
-              <Ionicons name="terminal-outline" size={22} color="#1F2937" />
-              <Text className="text-lg font-semibold text-black ml-2">
-                Deep Link Trigger Commands
-              </Text>
-            </View>
-
-            <Text className="text-xs text-gray-600 mb-4 leading-5">
-              Execute these commands in terminal or testRigor steps to navigate directly to this screen:
-            </Text>
-
-            {/* Android ADB Native App */}
-            <View className="bg-gray-900 rounded-xl p-3 mb-3">
-              <Text className="text-xs font-semibold text-green-400 mb-1">
-                Android ADB (Native App):
-              </Text>
-              <Text testID="cli-command-android" className="text-xs text-gray-200 font-mono" selectable>
-                adb shell am start -W -a android.intent.action.VIEW -d &quot;trplayground://demos/deep-link?promo=BLACKFRIDAY&quot; com.thiagonunes11.trplayground
-              </Text>
-            </View>
-
-            {/* Android Expo Go */}
-            <View className="bg-gray-900 rounded-xl p-3 mb-3">
-              <Text className="text-xs font-semibold text-amber-400 mb-1">
-                Android ADB (Expo Go):
-              </Text>
-              <Text testID="cli-command-expogo" className="text-xs text-gray-200 font-mono" selectable>
-                adb shell am start -W -a android.intent.action.VIEW -d &quot;exp://127.0.0.1:8081/--/demos/deep-link?promo=BLACKFRIDAY&quot; host.exp.exponent
-              </Text>
-            </View>
-
-            {/* iOS Simulator */}
-            <View className="bg-gray-900 rounded-xl p-3">
-              <Text className="text-xs font-semibold text-blue-400 mb-1">
-                iOS Simulator:
-              </Text>
-              <Text testID="cli-command-ios" className="text-xs text-gray-200 font-mono" selectable>
-                xcrun simctl openurl booted &quot;trplayground://demos/deep-link?promo=BLACKFRIDAY&quot;
-              </Text>
-            </View>
-          </View>
         </View>
       </ScrollView>
     </>
