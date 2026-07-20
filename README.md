@@ -27,14 +27,13 @@ testRigor Playground is a mobile application designed to provide interactive dem
 
 ## ✨ Features
 
-### Available Demos (19 total)
+### Available Demos (18 home demos + Deep Link target route)
 
 | Demo                        | Description                                              |
 | --------------------------- | -------------------------------------------------------- |
 | 🌐 **WebView**              | Embedded browser inside the app                          |
 | 📍 **Geo Location**         | Request location and validate coordinates                |
 | 🔗 **External Browser**     | Open device browser for native vs browser context tests  |
-| 🔗 **Deep Links**           | Open system apps (Settings, Phone, SMS) & custom URLs    |
 | 🖱️ **Button Tap**           | Validate button click functionality                      |
 | 📷 **Camera Validation**    | Test camera functionality and photo capture              |
 | ☑️ **Checkbox Interaction** | Validate checkbox selection and interaction              |

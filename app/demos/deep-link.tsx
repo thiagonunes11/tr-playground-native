@@ -1,75 +1,36 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Stack } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import * as Linking from 'expo-linking';
-import { useState } from 'react';
 import {
-  Alert,
-  Platform,
   Pressable,
   ScrollView,
   Text,
   View,
 } from 'react-native';
 
+const APP_SCHEME = 'trplayground://demos/deep-link';
+
 export default function DeepLinkScreen() {
-  const [actionFeedback, setActionFeedback] = useState<string | null>(null);
+  const router = useRouter();
+  const rawUrl = Linking.useURL();
+  const searchParams = useLocalSearchParams<{
+    promo?: string;
+    source?: string;
+    user?: string;
+    role?: string;
+  }>();
 
-  // Directly attempt to open the system URL scheme (avoiding canOpenURL false negatives on Android API 30+)
-  const handleOpenURL = async (url: string, label: string) => {
-    try {
-      await Linking.openURL(url);
-      setActionFeedback(`Successfully launched ${label}`);
-    } catch (error) {
-      console.error(`Failed to open URL ${url}:`, error);
-      setActionFeedback(`Unable to launch ${label} (${url}). App may not be supported on this device/emulator.`);
-      Alert.alert(
-        'App Not Supported',
-        `The URL scheme "${url}" could not be opened on this device/emulator.`
-      );
-    }
+  const clearParams = () => {
+    router.replace('/demos/deep-link' as any);
   };
 
-  // System App Deep Links
-  const openSystemSettings = async () => {
-    try {
-      await Linking.openSettings();
-      setActionFeedback('Opened System Settings');
-    } catch (error) {
-      console.error('Failed to open settings:', error);
-      setActionFeedback('Failed to open System Settings');
-    }
-  };
-
-  const openPhone = () => {
-    handleOpenURL('tel:15551234567', 'Phone / Dialer');
-  };
-
-  const openSMS = () => {
-    const smsUrl = Platform.select({
-      ios: 'sms:15551234567&body=Hello%20from%20testRigor%20Playground',
-      default: 'sms:15551234567?body=Hello%20from%20testRigor%20Playground',
-    });
-    handleOpenURL(smsUrl, 'SMS / Messages');
-  };
-
-  const openEmail = () => {
-    const mailUrl = 'mailto:support@testrigor.com?subject=Deep%20Link%20Test&body=Testing%20Deep%20Links%20in%20testRigor%20Playground';
-    handleOpenURL(mailUrl, 'System Email Client');
-  };
-
-  const openMaps = () => {
-    const mapsUrl = Platform.select({
-      ios: 'maps://?q=San+Francisco&ll=37.7749,-122.4194',
-      default: 'geo:37.7749,-122.4194?q=37.7749,-122.4194(San+Francisco)',
-    });
-    handleOpenURL(mapsUrl, 'System Maps App');
-  };
+  const hasParams = Object.keys(searchParams).length > 0;
 
   return (
     <>
       <Stack.Screen
         options={{
-          title: 'Deep Links',
+          title: 'Deep Link Receiver',
           headerStyle: { backgroundColor: '#fff' },
           headerTintColor: '#000',
         }}
@@ -84,138 +45,169 @@ export default function DeepLinkScreen() {
               </View>
               <View className="flex-1">
                 <Text className="text-2xl font-bold text-black mb-1">
-                  Deep Links
+                  Deep Link Target Screen
                 </Text>
               </View>
             </View>
             <Text className="text-base text-gray-600 leading-6">
-              Test opening native OS system applications (Phone, SMS, Email, Settings, Maps) using deep link URL schemes.
+              This screen is accessible exclusively via deep links (<Text className="font-mono text-blue-600">trplayground://demos/deep-link</Text>).
+              It captures and displays dynamic payload parameters passed via external links or test automation.
             </Text>
           </View>
 
-          {/* System App Deep Links Card */}
+          {/* Deep Link Receiver & Payload Section */}
           <View className="bg-white rounded-2xl p-6 mb-6 border-2 border-gray-100">
-            <Text className="text-lg font-semibold text-black mb-2 text-center">
-              System App Deep Links
-            </Text>
-            <Text className="text-sm text-gray-500 mb-4 text-center">
-              Tap any option to trigger the native system application scheme (Android & iOS)
-            </Text>
-
-            <View className="gap-3">
-              {/* Settings */}
-              <Pressable
-                testID="open-system-settings-button"
-                accessibilityLabel="Open System Settings"
-                onPress={openSystemSettings}
-                className="flex-row items-center bg-gray-100 active:bg-gray-200 rounded-xl p-4 border border-gray-200"
+            {/* Status Indicator */}
+            <View className="items-center mb-4">
+              <View
+                testID="deeplink-status"
+                className={`px-4 py-2 rounded-full border ${
+                  hasParams
+                    ? 'bg-green-100 border-green-300'
+                    : 'bg-blue-100 border-blue-300'
+                }`}
               >
-                <View className="bg-gray-200 rounded-lg p-2 mr-3">
-                  <Ionicons name="settings-outline" size={22} color="#374151" />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-base font-semibold text-gray-900">
-                    System Settings
-                  </Text>
-                  <Text className="text-xs text-gray-500 font-mono">
-                    Linking.openSettings()
-                  </Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-              </Pressable>
-
-              {/* Phone */}
-              <Pressable
-                testID="open-system-phone-button"
-                accessibilityLabel="Open Phone Dialer"
-                onPress={openPhone}
-                className="flex-row items-center bg-blue-50 active:bg-blue-100 rounded-xl p-4 border border-blue-200"
-              >
-                <View className="bg-blue-200 rounded-lg p-2 mr-3">
-                  <Ionicons name="call-outline" size={22} color="#1D4ED8" />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-base font-semibold text-blue-950">
-                    Phone Dialer
-                  </Text>
-                  <Text className="text-xs text-blue-700 font-mono">
-                    tel:15551234567
-                  </Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color="#60A5FA" />
-              </Pressable>
-
-              {/* SMS */}
-              <Pressable
-                testID="open-system-sms-button"
-                accessibilityLabel="Open SMS Messages"
-                onPress={openSMS}
-                className="flex-row items-center bg-green-50 active:bg-green-100 rounded-xl p-4 border border-green-200"
-              >
-                <View className="bg-green-200 rounded-lg p-2 mr-3">
-                  <Ionicons name="chatbubble-outline" size={22} color="#15803D" />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-base font-semibold text-green-950">
-                    SMS / Messages
-                  </Text>
-                  <Text className="text-xs text-green-700 font-mono">
-                    {Platform.OS === 'ios' ? 'sms:15551234567&body=...' : 'sms:15551234567?body=...'}
-                  </Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color="#4ADE80" />
-              </Pressable>
-
-              {/* Email */}
-              <Pressable
-                testID="open-system-email-button"
-                accessibilityLabel="Open System Email"
-                onPress={openEmail}
-                className="flex-row items-center bg-purple-50 active:bg-purple-100 rounded-xl p-4 border border-purple-200"
-              >
-                <View className="bg-purple-200 rounded-lg p-2 mr-3">
-                  <Ionicons name="mail-outline" size={22} color="#6B21A8" />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-base font-semibold text-purple-950">
-                    System Email Client
-                  </Text>
-                  <Text className="text-xs text-purple-700 font-mono">
-                    mailto:support@testrigor.com
-                  </Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color="#C084FC" />
-              </Pressable>
-
-              {/* Maps */}
-              <Pressable
-                testID="open-system-maps-button"
-                accessibilityLabel="Open System Maps"
-                onPress={openMaps}
-                className="flex-row items-center bg-amber-50 active:bg-amber-100 rounded-xl p-4 border border-amber-200"
-              >
-                <View className="bg-amber-200 rounded-lg p-2 mr-3">
-                  <Ionicons name="map-outline" size={22} color="#B45309" />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-base font-semibold text-amber-950">
-                    System Maps App
-                  </Text>
-                  <Text className="text-xs text-amber-700 font-mono">
-                    {Platform.OS === 'ios' ? 'maps://?q=San+Francisco' : 'geo:37.7749,-122.4194'}
-                  </Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color="#FBBF24" />
-              </Pressable>
-            </View>
-
-            {actionFeedback && (
-              <View className="mt-4 bg-blue-50 p-3 rounded-xl border border-blue-200">
-                <Text testID="action-feedback-text" className="text-xs text-blue-800 text-center font-medium">
-                  {actionFeedback}
+                <Text className={`text-xs font-bold ${hasParams ? 'text-green-800' : 'text-blue-800'}`}>
+                  {hasParams ? '● DEEPLINK PAYLOAD RECEIVED' : '✓ OPENED VIA DEEPLINK ROUTE'}
                 </Text>
               </View>
-            )}
+            </View>
+
+            {/* Raw Incoming URL Display */}
+            <View className="bg-gray-50 rounded-xl p-4 border border-gray-200 mb-4">
+              <Text className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                Raw Incoming URL:
+              </Text>
+              <Text
+                testID="deeplink-raw-url"
+                className="text-sm text-black font-mono leading-5"
+                selectable
+              >
+                {rawUrl || `${APP_SCHEME}`}
+              </Text>
+            </View>
+
+            {/* Parsed Search Parameters */}
+            <View className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+              <Text className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                Parsed Query Parameters:
+              </Text>
+
+              {hasParams ? (
+                <View className="gap-2">
+                  {searchParams.promo && (
+                    <View className="flex-row items-center bg-white p-3 rounded-lg border border-gray-200 justify-between">
+                      <Text className="text-sm font-semibold text-gray-700">promo:</Text>
+                      <Text
+                        testID="deeplink-param-promo"
+                        className="text-sm font-bold text-blue-600 font-mono"
+                      >
+                        {String(searchParams.promo)}
+                      </Text>
+                    </View>
+                  )}
+
+                  {searchParams.source && (
+                    <View className="flex-row items-center bg-white p-3 rounded-lg border border-gray-200 justify-between">
+                      <Text className="text-sm font-semibold text-gray-700">source:</Text>
+                      <Text
+                        testID="deeplink-param-source"
+                        className="text-sm font-bold text-purple-600 font-mono"
+                      >
+                        {String(searchParams.source)}
+                      </Text>
+                    </View>
+                  )}
+
+                  {searchParams.user && (
+                    <View className="flex-row items-center bg-white p-3 rounded-lg border border-gray-200 justify-between">
+                      <Text className="text-sm font-semibold text-gray-700">user:</Text>
+                      <Text
+                        testID="deeplink-param-user"
+                        className="text-sm font-bold text-green-600 font-mono"
+                      >
+                        {String(searchParams.user)}
+                      </Text>
+                    </View>
+                  )}
+
+                  {/* Other dynamic params */}
+                  {Object.entries(searchParams).map(([key, val]) => {
+                    if (['promo', 'source', 'user'].includes(key)) return null;
+                    return (
+                      <View key={key} className="flex-row items-center bg-white p-3 rounded-lg border border-gray-200 justify-between">
+                        <Text className="text-sm font-semibold text-gray-700">{key}:</Text>
+                        <Text
+                          testID={`deeplink-param-${key}`}
+                          className="text-sm font-bold text-gray-800 font-mono"
+                        >
+                          {String(val)}
+                        </Text>
+                      </View>
+                    );
+                  })}
+
+                  <Pressable
+                    testID="clear-deeplink-params-button"
+                    accessibilityLabel="Clear Parameters"
+                    onPress={clearParams}
+                    className="mt-3 bg-red-100 active:bg-red-200 rounded-lg py-2 px-3 items-center"
+                  >
+                    <Text className="text-red-700 font-semibold text-xs">
+                      Clear Parameters
+                    </Text>
+                  </Pressable>
+                </View>
+              ) : (
+                <Text testID="deeplink-no-params-text" className="text-sm text-gray-500 italic text-center py-2">
+                  No query parameters present in this deep link invocation.
+                </Text>
+              )}
+            </View>
+          </View>
+
+          {/* CLI Automation Commands Guide */}
+          <View className="bg-white rounded-2xl p-6 border-2 border-gray-100">
+            <View className="flex-row items-center mb-3">
+              <Ionicons name="terminal-outline" size={22} color="#1F2937" />
+              <Text className="text-lg font-semibold text-black ml-2">
+                Deep Link Trigger Commands
+              </Text>
+            </View>
+
+            <Text className="text-xs text-gray-600 mb-4 leading-5">
+              Execute these commands in terminal or testRigor steps to navigate directly to this screen:
+            </Text>
+
+            {/* Android ADB Native App */}
+            <View className="bg-gray-900 rounded-xl p-3 mb-3">
+              <Text className="text-xs font-semibold text-green-400 mb-1">
+                Android ADB (Native App):
+              </Text>
+              <Text testID="cli-command-android" className="text-xs text-gray-200 font-mono" selectable>
+                adb shell am start -W -a android.intent.action.VIEW -d &quot;trplayground://demos/deep-link?promo=BLACKFRIDAY&quot; com.thiagonunes11.trplayground
+              </Text>
+            </View>
+
+            {/* Android Expo Go */}
+            <View className="bg-gray-900 rounded-xl p-3 mb-3">
+              <Text className="text-xs font-semibold text-amber-400 mb-1">
+                Android ADB (Expo Go):
+              </Text>
+              <Text testID="cli-command-expogo" className="text-xs text-gray-200 font-mono" selectable>
+                adb shell am start -W -a android.intent.action.VIEW -d &quot;exp://127.0.0.1:8081/--/demos/deep-link?promo=BLACKFRIDAY&quot; host.exp.exponent
+              </Text>
+            </View>
+
+            {/* iOS Simulator */}
+            <View className="bg-gray-900 rounded-xl p-3">
+              <Text className="text-xs font-semibold text-blue-400 mb-1">
+                iOS Simulator:
+              </Text>
+              <Text testID="cli-command-ios" className="text-xs text-gray-200 font-mono" selectable>
+                xcrun simctl openurl booted &quot;trplayground://demos/deep-link?promo=BLACKFRIDAY&quot;
+              </Text>
+            </View>
           </View>
         </View>
       </ScrollView>
