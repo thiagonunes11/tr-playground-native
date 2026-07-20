@@ -18,6 +18,7 @@ export default function RootLayout() {
           <Stack.Screen name="demos/web-view" options={{ headerShown: true, title: 'WebView' }} />
           <Stack.Screen name="demos/geo-location" options={{ headerShown: true, title: 'Geo Location' }} />
           <Stack.Screen name="demos/external-browser" options={{ headerShown: true, title: 'External Browser' }} />
+          <Stack.Screen name="demos/deep-link" options={{ headerShown: true, title: 'Deep Links' }} />
           <Stack.Screen name="demos/button-tap" options={{ headerShown: true, title: 'Button Tap' }} />
           <Stack.Screen name="demos/camera-validation" options={{ headerShown: true, title: 'Camera Validation' }} />
           <Stack.Screen name="demos/checkbox-interaction" options={{ headerShown: true, title: 'Checkbox Interaction' }} />

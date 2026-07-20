@@ -446,7 +446,7 @@ export default function FileDownloadDemo() {
             <Ionicons name="information-circle" size={24} color="#3B82F6" />
             <View className="flex-1 ml-3">
               <ThemedText className="text-sm text-blue-700 dark:text-blue-300 leading-5">
-                Files are saved to the app's local storage. This demo simulates the download experience with progress tracking and file management.
+                Files are saved to the app&apos;s local storage. This demo simulates the download experience with progress tracking and file management.
               </ThemedText>
             </View>
           </View>

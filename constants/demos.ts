@@ -27,6 +27,13 @@ export const DEMOS: Demo[] = [
     route: '/demos/external-browser',
   },
   {
+    id: 'deep-link',
+    title: 'Deep Links',
+    description: 'Open system apps (Settings, Phone, SMS, Mail, Maps) & test scheme URLs on Android and iOS',
+    icon: 'link-outline',
+    route: '/demos/deep-link',
+  },
+  {
     id: 'button-tap',
     title: 'Button Tap',
     description: 'Validate button click functionality',

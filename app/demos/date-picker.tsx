@@ -88,7 +88,7 @@ export default function DatePickerDemo() {
 
       <View className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
         <ThemedText className="text-sm text-center">
-          Tap "Select Date" to open the date picker and choose a date. The selected date will appear below.
+          Tap &quot;Select Date&quot; to open the date picker and choose a date. The selected date will appear below.
         </ThemedText>
       </View>
     </ThemedView>
