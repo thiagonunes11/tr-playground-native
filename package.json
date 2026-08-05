@@ -1,7 +1,7 @@
 {
   "name": "tr-playground",
   "main": "expo-router/entry",
-  "version": "1.0.0",
+  "version": "0.6.0",
   "scripts": {
     "start": "expo start",
     "start:go": "expo start --go",
@@ -9,6 +9,8 @@
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo run:android",
     "ios": "expo run:ios",
+    "build:android:preview": "eas build --platform android --profile preview",
+    "build:ios:simulator": "eas build --platform ios --profile preview",
     "web": "expo start --web",
     "lint": "expo lint"
   },
@@ -29,6 +31,7 @@
     "expo-haptics": "~15.0.8",
     "expo-image": "~3.0.11",
     "expo-linking": "~8.0.12",
+    "expo-local-authentication": "~17.0.8",
     "expo-location": "~19.0.8",
     "expo-notifications": "~0.32.17",
     "expo-router": "~6.0.24",

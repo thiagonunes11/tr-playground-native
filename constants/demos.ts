@@ -6,6 +6,13 @@ import { Demo } from '@/types/demo';
  */
 export const DEMOS: Demo[] = [
   {
+    id: 'biometric-authentication',
+    title: 'Biometric Authentication',
+    description: 'Validate Face ID, Touch ID, fingerprint, and device credential flows',
+    icon: 'finger-print-outline',
+    route: '/demos/biometric-authentication',
+  },
+  {
     id: 'web-view',
     title: 'WebView',
     description: 'Open a simple embedded WebView in the app',

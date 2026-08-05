@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { View, ScrollView, Pressable, Alert, Platform } from 'react-native';
+import { View, ScrollView, Pressable, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
-import * as FileSystem from 'expo-file-system/legacy';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 
@@ -59,9 +58,6 @@ export default function FileUploadDemo() {
       await new Promise(resolve => setTimeout(resolve, 2000));
 
       clearInterval(progressInterval);
-
-      // Get file info
-      const fileInfo = await FileSystem.getInfoAsync(file.uri);
 
       const uploadedFile: UploadedFile = {
         id: fileId,

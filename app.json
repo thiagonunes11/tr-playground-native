@@ -2,14 +2,18 @@
   "expo": {
     "name": "testRigor Playground",
     "slug": "tr-playground",
-    "version": "1.0.0",
+    "version": "0.6.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
     "scheme": "trplayground",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.thiagonunes11.trplayground",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -49,6 +53,12 @@
         "expo-location",
         {
           "locationWhenInUsePermission": "Allow testRigor Playground to access your location for the geolocation demo."
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow testRigor Playground to use Face ID for biometric authentication testing."
         }
       ],
       "@react-native-community/datetimepicker",

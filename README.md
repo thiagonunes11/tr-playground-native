@@ -27,10 +27,11 @@ testRigor Playground is a mobile application designed to provide interactive dem
 
 ## ✨ Features
 
-### Available Demos (18 home demos + Deep Link target route)
+### Available Demos (19 home demos + Deep Link target route)
 
 | Demo                        | Description                                              |
 | --------------------------- | -------------------------------------------------------- |
+| 🔐 **Biometric Authentication** | Test Face ID, Touch ID, fingerprint, and fallback flows |
 | 🌐 **WebView**              | Embedded browser inside the app                          |
 | 📍 **Geo Location**         | Request location and validate coordinates                |
 | 🔗 **External Browser**     | Open device browser for native vs browser context tests  |
@@ -46,7 +47,7 @@ testRigor Playground is a mobile application designed to provide interactive dem
 | 🔢 **Counter**              | Simple counter with increment/decrement                  |
 | 🌐 **API Validation**       | Test HTTP methods with real API endpoints                |
 | 🛒 **Shopping Cart**        | Full e-commerce flow with cart management                |
-| 📥 **File Download**        | Download files and validate functionality                  |
+| 📥 **File Download**        | Download files and validate functionality                |
 | 📤 **File Upload**          | Select and upload files                                  |
 | 👁️ **OCR Check**            | Image-based OCR validation                               |
 
@@ -125,12 +126,22 @@ npm install -g eas-cli
 # Login to Expo
 eas login
 
-# Build for Android (AAB)
-eas build --platform android
+# Build an installable Android APK
+npm run build:android:preview
 
-# Build for iOS
+# Build for Google Play (AAB)
+eas build --platform android --profile production
+
+# Build for an iOS device (App Store)
 eas build --platform ios
+
+# Build an installable app for iOS Simulator
+npm run build:ios:simulator
 ```
+
+The iOS Simulator build does not require an Apple Developer account. EAS produces
+a compressed `.app` bundle; extract it and drag the `.app` into a running Simulator,
+or install it with `xcrun simctl install booted path/to/testRigor\ Playground.app`.
 
 ## 📁 Project Structure
 
@@ -177,8 +188,8 @@ Quick steps:
 
 Download the latest release for your platform:
 
-- [**Android (AAB)**](https://github.com/thiagonunes11/tr-playground-native/releases/latest)
-- [**iOS (APP)**](https://github.com/thiagonunes11/tr-playground-native/releases/latest)
+- [**Android (APK)**](https://github.com/thiagonunes11/tr-playground-native/releases/latest)
+- [**iOS Simulator (APP.ZIP)**](https://github.com/thiagonunes11/tr-playground-native/releases/latest)
 
 ## 🤝 Contributing
 

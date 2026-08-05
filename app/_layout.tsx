@@ -15,6 +15,7 @@ export default function RootLayout() {
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack>
           <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="demos/biometric-authentication" options={{ headerShown: true, title: 'Biometric Authentication' }} />
           <Stack.Screen name="demos/web-view" options={{ headerShown: true, title: 'WebView' }} />
           <Stack.Screen name="demos/geo-location" options={{ headerShown: true, title: 'Geo Location' }} />
           <Stack.Screen name="demos/external-browser" options={{ headerShown: true, title: 'External Browser' }} />

@@ -290,6 +290,7 @@ npm run start:dev
 
 | Demo | Native package | Notes |
 |---|---|---|
+| Biometric Authentication | `expo-local-authentication` | Face ID requires a native development build on iOS; Android uses the system biometric prompt |
 | WebView | `react-native-webview` | Embedded browser; works in Expo Go |
 | Geo Location | `expo-location` | Requests foreground location permission; works in Expo Go. Rebuild dev client after first install. |
 | Camera Validation | `expo-camera` | Requires camera permission |
@@ -298,6 +299,29 @@ npm run start:dev
 | File Upload | `expo-document-picker` | Opens system file picker |
 | File Download | `expo-file-system` | Writes to device storage |
 | External Browser | — | Uses `Linking.openURL`; works in Expo Go |
+
+### Testing biometric authentication
+
+The biometric demo uses the same screen on both platforms and adapts to the
+authentication methods reported by the operating system.
+
+**iOS Simulator**
+
+1. Open a Simulator that supports Face ID or Touch ID.
+2. Use **Features → Face ID/Touch ID → Enrolled** to change enrollment state.
+3. Start authentication in the app.
+4. Choose **Matching** or **Non-matching Face/Touch** from the same menu.
+
+Face ID requires a native development or preview build; it is not available in
+Expo Go on iOS.
+
+**Android Emulator**
+
+1. Configure a screen lock and enroll a fingerprint in Android Settings.
+2. Open the emulator's extended controls and select **Fingerprint**.
+3. Start authentication in the app and send an enrolled or unknown fingerprint.
+
+The available Android methods depend on the emulator image and device profile.
 
 ## Common Issues
 
