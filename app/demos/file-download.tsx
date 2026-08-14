@@ -69,8 +69,8 @@ const SAMPLE_FILES: DownloadableFile[] = [
     size: '413 B',
     icon: 'document',
     mimeType: 'text/plain',
-    // eslint-disable-next-line @typescript-eslint/no-require-imports -- resolved as an
-    // asset via the `txt` entry added to assetExts in metro.config.js
+    // Resolved as an asset via the `txt` entry added to assetExts in metro.config.js
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     read: () => readAsset(require('../../assets/documents/sample-text.txt'), 'utf8')
   },
   {
@@ -228,6 +228,7 @@ export default function FileDownloadDemo() {
         Alert.alert('File Location', `File saved at: ${downloadedFile.localUri}`);
       }
     } catch (error) {
+      console.error('Unable to open file:', error);
       Alert.alert('Error', 'Unable to open the file');
     }
   };
@@ -238,6 +239,7 @@ export default function FileDownloadDemo() {
       setDownloadedFiles(prev => prev.filter(f => f.id !== downloadedFile.id));
       Alert.alert('Deleted', 'File has been removed from downloads');
     } catch (error) {
+      console.error('Unable to delete file:', error);
       Alert.alert('Error', 'Unable to delete the file');
     }
   };
@@ -257,7 +259,11 @@ export default function FileDownloadDemo() {
     const hasError = downloadState?.error;
 
     return (
-      <View key={file.id} className="bg-white dark:bg-gray-800 rounded-2xl p-5 mb-4 border-2 border-gray-100 dark:border-gray-700">
+      <View
+        key={file.id}
+        testID={`download-card-${file.id}`}
+        className="bg-white dark:bg-gray-800 rounded-2xl p-5 mb-4 border-2 border-gray-100 dark:border-gray-700"
+      >
         <View className="flex-row items-start mb-4">
           <View className="bg-blue-100 dark:bg-blue-900/30 rounded-xl p-3 mr-4">
             <Ionicons name={file.icon as any} size={24} color="#3B82F6" />
@@ -283,7 +289,7 @@ export default function FileDownloadDemo() {
               <ThemedText className="text-sm text-gray-600 dark:text-gray-400">
                 Downloading...
               </ThemedText>
-              <ThemedText className="text-sm font-medium">
+              <ThemedText testID={`download-progress-${file.id}`} className="text-sm font-medium">
                 {Math.round(progress * 100)}%
               </ThemedText>
             </View>
@@ -298,13 +304,16 @@ export default function FileDownloadDemo() {
 
         {hasError && (
           <View className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 mb-4">
-            <ThemedText className="text-red-600 dark:text-red-400 text-sm">
+            <ThemedText testID={`download-error-${file.id}`} className="text-red-600 dark:text-red-400 text-sm">
               {hasError}
             </ThemedText>
           </View>
         )}
 
         <Pressable
+          testID={`download-button-${file.id}`}
+          accessibilityLabel={`Download ${file.name}`}
+          accessibilityRole="button"
           onPress={() => downloadFile(file)}
           disabled={isDownloading}
           className={`rounded-xl py-3 px-4 active:opacity-80 ${
@@ -327,12 +336,16 @@ export default function FileDownloadDemo() {
   };
 
   const renderDownloadedFile = (file: DownloadedFile) => (
-    <View key={file.id} className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 mb-3 border-2 border-green-200 dark:border-green-800">
+    <View
+      key={file.id}
+      testID={`downloaded-file-${file.id}`}
+      className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 mb-3 border-2 border-green-200 dark:border-green-800"
+    >
       <View className="flex-row items-center justify-between mb-2">
         <View className="flex-row items-center flex-1 mr-4">
           <Ionicons name="checkmark-circle" size={20} color="#22C55E" />
           <View className="ml-3 flex-1">
-            <ThemedText className="font-semibold text-green-800 dark:text-green-200">
+            <ThemedText testID={`downloaded-file-name-${file.id}`} className="font-semibold text-green-800 dark:text-green-200">
               {file.name}
             </ThemedText>
             <ThemedText className="text-xs text-green-600 dark:text-green-400">
@@ -340,13 +353,16 @@ export default function FileDownloadDemo() {
             </ThemedText>
           </View>
         </View>
-        <ThemedText className="text-sm text-green-600 dark:text-green-400">
+        <ThemedText testID={`downloaded-file-size-${file.id}`} className="text-sm text-green-600 dark:text-green-400">
           {formatFileSize(file.size)}
         </ThemedText>
       </View>
 
       <View className="flex-row">
         <Pressable
+          testID={`view-downloaded-file-${file.id}`}
+          accessibilityLabel={`View ${file.name}`}
+          accessibilityRole="button"
           onPress={() => openFile(file)}
           className="bg-green-500 rounded-lg py-2 px-4 mr-2 active:bg-green-600 flex-1"
         >
@@ -357,6 +373,9 @@ export default function FileDownloadDemo() {
         </Pressable>
 
         <Pressable
+          testID={`delete-downloaded-file-${file.id}`}
+          accessibilityLabel={`Delete ${file.name}`}
+          accessibilityRole="button"
           onPress={() => deleteFile(file)}
           className="bg-red-500 rounded-lg py-2 px-4 active:bg-red-600"
         >

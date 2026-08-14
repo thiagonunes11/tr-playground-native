@@ -47,7 +47,8 @@ export default function CounterDemo() {
         {/* Counter Display */}
         <View className="items-center mb-8">
           <View className="bg-gray-50 dark:bg-gray-700 rounded-full w-56 h-56 items-center justify-center border-4 border-blue-200 dark:border-blue-800">
-            <ThemedText 
+            <ThemedText
+              testID="counter-value"
               className="font-bold text-blue-600 dark:text-blue-400"
               style={{ 
                 fontSize: 50,
@@ -64,6 +65,9 @@ export default function CounterDemo() {
         {/* Buttons */}
         <View className="flex-row justify-center">
           <Pressable
+            testID="counter-decrement-button"
+            accessibilityLabel="Decrement"
+            accessibilityRole="button"
             onPress={decrement}
             className="bg-red-500 px-6 py-3 rounded-lg active:bg-red-600 mr-8"
           >
@@ -73,6 +77,9 @@ export default function CounterDemo() {
           </Pressable>
 
           <Pressable
+            testID="counter-increment-button"
+            accessibilityLabel="Increment"
+            accessibilityRole="button"
             onPress={increment}
             className="bg-green-500 px-6 py-3 rounded-lg active:bg-green-600"
           >

@@ -27,6 +27,9 @@ const SAMPLE_PRODUCTS: Product[] = [
   { id: '8', name: 'Notebook', price: 12.99, description: 'Hardcover journal with 200 pages', category: 'Stationery' },
 ];
 
+/** Readable, stable testID suffix, e.g. "Wireless Headphones" -> "wireless-headphones" */
+const slugify = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
 export default function ShoppingCartDemo() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartModalVisible, setCartModalVisible] = useState(false);
@@ -96,7 +99,10 @@ export default function ShoppingCartDemo() {
   };
 
   const renderProductCard = (product: Product) => (
-    <View key={product.id} className="bg-white dark:bg-gray-800 rounded-2xl p-4 mb-4 border-2 border-gray-100 dark:border-gray-700">
+    <View
+      key={product.id}
+      testID={`product-card-${slugify(product.name)}`}
+      className="bg-white dark:bg-gray-800 rounded-2xl p-4 mb-4 border-2 border-gray-100 dark:border-gray-700">
       <View className="flex-row justify-between items-start mb-2">
         <View className="flex-1 mr-4">
           <ThemedText className="text-lg font-bold mb-1">{product.name}</ThemedText>
@@ -117,6 +123,9 @@ export default function ShoppingCartDemo() {
       </View>
 
       <Pressable
+        testID={`add-to-cart-${slugify(product.name)}`}
+        accessibilityLabel={`Add ${product.name} to cart`}
+        accessibilityRole="button"
         onPress={() => addToCart(product)}
         className="bg-blue-500 rounded-xl py-3 px-4 active:bg-blue-600 mt-3"
       >
@@ -129,7 +138,10 @@ export default function ShoppingCartDemo() {
   );
 
   const renderCartItem = (item: CartItem) => (
-    <View key={item.id} className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 mb-3">
+    <View
+      key={item.id}
+      testID={`cart-item-${slugify(item.name)}`}
+      className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 mb-3">
       <View className="flex-row justify-between items-start mb-3">
         <View className="flex-1 mr-4">
           <ThemedText className="text-base font-semibold mb-1">{item.name}</ThemedText>
@@ -145,17 +157,26 @@ export default function ShoppingCartDemo() {
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center bg-white dark:bg-gray-600 rounded-lg">
           <Pressable
+            testID={`decrease-quantity-${slugify(item.name)}`}
+            accessibilityLabel={`Decrease ${item.name} quantity`}
+            accessibilityRole="button"
             onPress={() => updateQuantity(item.id, item.quantity - 1)}
             className="px-3 py-2 active:bg-gray-100 dark:active:bg-gray-500 rounded-l-lg"
           >
             <Ionicons name="remove" size={16} color="#6B7280" />
           </Pressable>
 
-          <ThemedText className="px-4 py-2 font-semibold min-w-12 text-center">
+          <ThemedText
+            testID={`cart-quantity-${slugify(item.name)}`}
+            className="px-4 py-2 font-semibold min-w-12 text-center"
+          >
             {item.quantity}
           </ThemedText>
 
           <Pressable
+            testID={`increase-quantity-${slugify(item.name)}`}
+            accessibilityLabel={`Increase ${item.name} quantity`}
+            accessibilityRole="button"
             onPress={() => updateQuantity(item.id, item.quantity + 1)}
             className="px-3 py-2 active:bg-gray-100 dark:active:bg-gray-500 rounded-r-lg"
           >
@@ -164,6 +185,9 @@ export default function ShoppingCartDemo() {
         </View>
 
         <Pressable
+          testID={`remove-from-cart-${slugify(item.name)}`}
+          accessibilityLabel={`Remove ${item.name} from cart`}
+          accessibilityRole="button"
           onPress={() => removeFromCart(item.id)}
           className="bg-red-500 rounded-lg px-3 py-2 active:bg-red-600"
         >
@@ -201,13 +225,16 @@ export default function ShoppingCartDemo() {
       {/* Floating Cart Button */}
       {getTotalItems() > 0 && (
         <Pressable
+          testID="open-cart-button"
+          accessibilityLabel="Open cart"
+          accessibilityRole="button"
           onPress={() => setCartModalVisible(true)}
           className="absolute bottom-6 left-6 bg-blue-500 rounded-full w-16 h-16 items-center justify-center shadow-lg active:bg-blue-600"
         >
           <View className="relative">
             <Ionicons name="basket" size={28} color="white" />
             <View className="absolute -top-2 -right-2 bg-red-500 rounded-full min-w-6 h-6 items-center justify-center px-1">
-              <ThemedText className="text-white text-xs font-bold">
+              <ThemedText testID="cart-item-count" className="text-white text-xs font-bold">
                 {getTotalItems()}
               </ThemedText>
             </View>
@@ -217,6 +244,7 @@ export default function ShoppingCartDemo() {
 
       {/* Cart Modal */}
       <Modal
+        testID="cart-modal"
         visible={cartModalVisible}
         animationType="slide"
         presentationStyle="pageSheet"
@@ -228,11 +256,14 @@ export default function ShoppingCartDemo() {
             <View className="flex-row items-center justify-between">
               <View className="flex-row items-center">
                 <Ionicons name="basket" size={24} color="#3B82F6" />
-                <ThemedText className="text-xl font-bold ml-3">
+                <ThemedText testID="cart-header-count" className="text-xl font-bold ml-3">
                   Shopping Cart ({getTotalItems()})
                 </ThemedText>
               </View>
               <Pressable
+                testID="close-cart-button"
+                accessibilityLabel="Close cart"
+                accessibilityRole="button"
                 onPress={() => setCartModalVisible(false)}
                 className="p-2 active:bg-gray-100 dark:active:bg-gray-700 rounded-full"
               >
@@ -246,7 +277,7 @@ export default function ShoppingCartDemo() {
             {cart.length === 0 ? (
               <View className="items-center justify-center py-12">
                 <Ionicons name="basket-outline" size={64} color="#D1D5DB" />
-                <ThemedText className="text-gray-500 dark:text-gray-400 text-lg mt-4">
+                <ThemedText testID="cart-empty-message" className="text-gray-500 dark:text-gray-400 text-lg mt-4">
                   Your cart is empty
                 </ThemedText>
                 <ThemedText className="text-gray-400 dark:text-gray-500 text-sm mt-2">
@@ -261,7 +292,7 @@ export default function ShoppingCartDemo() {
                 <View className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 mt-4">
                   <View className="flex-row justify-between items-center">
                     <ThemedText className="text-lg font-bold">Total</ThemedText>
-                    <ThemedText className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    <ThemedText testID="cart-total" className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                       ${getTotalPrice().toFixed(2)}
                     </ThemedText>
                   </View>
@@ -274,6 +305,9 @@ export default function ShoppingCartDemo() {
           {cart.length > 0 && (
             <View className="px-6 py-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
               <Pressable
+                testID="checkout-button"
+                accessibilityLabel="Checkout"
+                accessibilityRole="button"
                 onPress={handleCheckout}
                 className="bg-green-500 rounded-xl py-4 px-6 active:bg-green-600"
               >

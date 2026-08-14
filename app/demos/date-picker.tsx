@@ -58,6 +58,9 @@ export default function DatePickerDemo() {
         </ThemedText>
 
         <Pressable
+          testID="select-date-button"
+          accessibilityLabel="Select Date"
+          accessibilityRole="button"
           onPress={showDatepicker}
           className="bg-blue-500 p-4 rounded-lg active:bg-blue-600 mb-4"
         >
@@ -68,7 +71,7 @@ export default function DatePickerDemo() {
 
         {selectedDate && (
           <View className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-            <ThemedText className="text-center text-lg font-medium">
+            <ThemedText testID="selected-date-value" className="text-center text-lg font-medium">
               {selectedDate}
             </ThemedText>
           </View>
