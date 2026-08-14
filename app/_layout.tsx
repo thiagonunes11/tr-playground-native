@@ -5,8 +5,15 @@ import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import '../global.css';
 
+import { ThemeToggle } from '@/components/theme-toggle';
 import { DEMOS } from '@/constants/demos';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+
+/** Keeps the toggle reachable from every demo, not just the home screen */
+const demoScreenOptions = {
+  headerShown: true,
+  headerRight: () => <ThemeToggle />,
+};
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -22,14 +29,14 @@ export default function RootLayout() {
             <Stack.Screen
               key={demo.id}
               name={demo.route.replace(/^\//, '')}
-              options={{ headerShown: true, title: demo.title }}
+              options={{ ...demoScreenOptions, title: demo.title }}
             />
           ))}
 
           {/* Reachable only through a deep link, so it is intentionally absent from DEMOS */}
           <Stack.Screen
             name="demos/deep-link"
-            options={{ headerShown: true, title: 'Deep Links' }}
+            options={{ ...demoScreenOptions, title: 'Deep Links' }}
           />
         </Stack>
         <StatusBar style="auto" />

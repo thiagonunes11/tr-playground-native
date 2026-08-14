@@ -1,5 +1,6 @@
 import { ScrollView, View, Text, Image } from 'react-native';
 import { DemoCard } from '@/components/demo-card';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { DEMOS } from '@/constants/demos';
 
 export default function HomeScreen() {
@@ -7,7 +8,7 @@ export default function HomeScreen() {
     <ScrollView testID="home-screen" className="flex-1 bg-gray-50 dark:bg-gray-900">
       {/* Header Section */}
       <View className="bg-white dark:bg-gray-800 px-6 pt-16 pb-8">
-        {/* Logo */}
+        {/* Logo, with the theme toggle pinned right so the logo stays centred */}
         <View className="items-center mb-6">
           <Image
             testID="home-logo"
@@ -15,6 +16,9 @@ export default function HomeScreen() {
             style={{ width: 200, height: 50 }}
             resizeMode="contain"
           />
+          <View className="absolute right-0 top-0">
+            <ThemeToggle showLabel />
+          </View>
         </View>
 
         {/* Title and Description */}

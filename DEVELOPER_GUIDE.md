@@ -221,6 +221,36 @@ The application uses a consistent color scheme:
 - **Card Background**: `#FFFFFF` (white)
 - **Border**: `#F3F4F6` (gray-100)
 
+### Dark mode
+
+Every screen supports both schemes, so pair each colour utility with a `dark:`
+variant. The conventions used across the demos:
+
+| Light | Dark |
+| --- | --- |
+| `bg-gray-50` (page) | `dark:bg-gray-900` |
+| `bg-white` (card) | `dark:bg-gray-800` |
+| `bg-gray-50` (inner panel) | `dark:bg-gray-700` |
+| `text-black` | `dark:text-white` |
+| `text-gray-600` | `dark:text-gray-400` |
+| `border-gray-100` / `border-gray-200` | `dark:border-gray-700` |
+| `bg-blue-100` (icon container) | `dark:bg-blue-900/30` |
+
+The scheme can be switched in-app with the toggle on the home screen and in every
+demo header (`components/theme-toggle.tsx`, `testID="theme-toggle-button"`). It
+starts out following the device and overrides it once tapped.
+
+**Read the scheme from `@/hooks/use-color-scheme`, never from `react-native`
+directly.** NativeWind's `dark:` variants follow NativeWind's own store, so a
+component reading React Native's `useColorScheme` would ignore the toggle and
+drift out of sync with the classes around it. That hook resolves NativeWind's
+value first and falls back to the device.
+
+Do not hardcode `headerStyle` / `headerTintColor` on a screen. The root layout's
+`ThemeProvider` already themes the header, and a hardcoded colour survives the
+toggle. `camera-validation` is the one deliberate exception, since its viewfinder
+header stays dark in both schemes.
+
 ### Common Components
 
 **Icon Container:**
