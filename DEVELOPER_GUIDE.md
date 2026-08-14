@@ -673,7 +673,10 @@ check that page contains "Ada Lovelace from Brazil registered successfully!"
   rather than submitting. `form-notes-line-count` makes that contrast assertable.
 - The dropdown uses `mode="dropdown"` so Android renders a real
   `android.widget.Spinner`, which is what the `select` command resolves. On iOS
-  the same component renders a `UIPickerView` wheel, so the interaction differs.
+  the same component renders an inline `UIPickerView` wheel instead: it is always
+  visible rather than opening on tap, and a selection is made by spinning it. A
+  test that taps to open a list will not work there — assert against
+  `form-selected-country` after the spin.
 - The closed spinner sits on the app's own card, so its text and arrow colours
   come from the `Picker` `style` and `dropdownIconColor` props and follow the
   in-app theme toggle. The open popup is drawn with Android's theme, which
