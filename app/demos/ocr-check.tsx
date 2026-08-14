@@ -8,7 +8,7 @@ export default function OCRDemo() {
     <ThemedView className="flex-1">
       <ScrollView className="flex-1 p-6">
         <View className="items-center mb-8">
-          <ThemedText className="text-3xl font-bold mb-4 text-center">
+          <ThemedText testID="ocr-title" className="text-3xl font-bold mb-4 text-center">
             OCR Check
           </ThemedText>
           <ThemedText className="text-lg text-center text-gray-600 dark:text-gray-400 mb-8">
@@ -18,6 +18,8 @@ export default function OCRDemo() {
 
         <View className="bg-white dark:bg-gray-800 rounded-2xl p-6 border-2 border-gray-100 dark:border-gray-700">
           <Image
+            testID="ocr-image"
+            accessibilityLabel="Image containing text for OCR validation"
             source={require('@/assets/images/demo/OCR_TEXT.png')}
             className="w-full h-64 rounded-xl"
             resizeMode="contain"

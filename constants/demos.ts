@@ -76,6 +76,13 @@ export const DEMOS: Demo[] = [
     route: '/demos/date-picker',
   },
   {
+    id: 'form-inputs',
+    title: 'Form Inputs',
+    description: 'Native text fields with Enter/Return handling and a native dropdown',
+    icon: 'create-outline',
+    route: '/demos/form-inputs',
+  },
+  {
     id: 'dynamic-login',
     title: 'Dynamic Login Text',
     description: 'Login form with random button text',

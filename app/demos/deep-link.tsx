@@ -29,58 +29,54 @@ export default function DeepLinkScreen() {
   return (
     <>
       <Stack.Screen
-        options={{
-          title: 'Deep Link Receiver',
-          headerStyle: { backgroundColor: '#fff' },
-          headerTintColor: '#000',
-        }}
+        options={{ title: 'Deep Link Receiver' }}
       />
-      <ScrollView className="flex-1 bg-gray-50">
+      <ScrollView className="flex-1 bg-gray-50 dark:bg-gray-900">
         <View className="p-6">
           {/* Header Card */}
-          <View className="bg-white rounded-2xl p-6 mb-6 border-2 border-gray-100">
+          <View className="bg-white dark:bg-gray-800 rounded-2xl p-6 mb-6 border-2 border-gray-100 dark:border-gray-700">
             <View className="flex-row items-center mb-4">
-              <View className="bg-blue-100 rounded-xl p-3 mr-4">
+              <View className="bg-blue-100 dark:bg-blue-900/30 rounded-xl p-3 mr-4">
                 <Ionicons name="link-outline" size={32} color="#3B82F6" />
               </View>
               <View className="flex-1">
-                <Text className="text-2xl font-bold text-black mb-1">
+                <Text className="text-2xl font-bold text-black dark:text-white mb-1">
                   Deep Link Target Screen
                 </Text>
               </View>
             </View>
-            <Text className="text-base text-gray-600 leading-6">
-              This screen is accessible exclusively via deep links (<Text className="font-mono text-blue-600">trplayground://demos/deep-link</Text>).
+            <Text className="text-base text-gray-600 dark:text-gray-400 leading-6">
+              This screen is accessible exclusively via deep links (<Text className="font-mono text-blue-600 dark:text-blue-400">trplayground://demos/deep-link</Text>).
               It captures and displays dynamic payload parameters passed via external links or test automation.
             </Text>
           </View>
 
           {/* Deep Link Receiver & Payload Section */}
-          <View className="bg-white rounded-2xl p-6 mb-6 border-2 border-gray-100">
+          <View className="bg-white dark:bg-gray-800 rounded-2xl p-6 mb-6 border-2 border-gray-100 dark:border-gray-700">
             {/* Status Indicator */}
             <View className="items-center mb-4">
               <View
                 testID="deeplink-status"
                 className={`px-4 py-2 rounded-full border ${
                   hasParams
-                    ? 'bg-green-100 border-green-300'
-                    : 'bg-blue-100 border-blue-300'
+                    ? 'bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-700'
+                    : 'bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700'
                 }`}
               >
-                <Text className={`text-xs font-bold ${hasParams ? 'text-green-800' : 'text-blue-800'}`}>
+                <Text className={`text-xs font-bold ${hasParams ? 'text-green-800 dark:text-green-200' : 'text-blue-800 dark:text-blue-200'}`}>
                   {hasParams ? '● DEEPLINK PAYLOAD RECEIVED' : '✓ OPENED VIA DEEPLINK ROUTE'}
                 </Text>
               </View>
             </View>
 
             {/* Raw Incoming URL Display */}
-            <View className="bg-gray-50 rounded-xl p-4 border border-gray-200 mb-4">
-              <Text className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+            <View className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 border border-gray-200 dark:border-gray-700 mb-4">
+              <Text className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
                 Raw Incoming URL:
               </Text>
               <Text
                 testID="deeplink-raw-url"
-                className="text-sm text-black font-mono leading-5"
+                className="text-sm text-black dark:text-white font-mono leading-5"
                 selectable
               >
                 {rawUrl || `${APP_SCHEME}`}
@@ -88,19 +84,19 @@ export default function DeepLinkScreen() {
             </View>
 
             {/* Parsed Search Parameters */}
-            <View className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-              <Text className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+            <View className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+              <Text className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
                 Parsed Query Parameters:
               </Text>
 
               {hasParams ? (
                 <View className="gap-2">
                   {searchParams.promo && (
-                    <View className="flex-row items-center bg-white p-3 rounded-lg border border-gray-200 justify-between">
-                      <Text className="text-sm font-semibold text-gray-700">promo:</Text>
+                    <View className="flex-row items-center bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 justify-between">
+                      <Text className="text-sm font-semibold text-gray-700 dark:text-gray-300">promo:</Text>
                       <Text
                         testID="deeplink-param-promo"
-                        className="text-sm font-bold text-blue-600 font-mono"
+                        className="text-sm font-bold text-blue-600 dark:text-blue-400 font-mono"
                       >
                         {String(searchParams.promo)}
                       </Text>
@@ -108,11 +104,11 @@ export default function DeepLinkScreen() {
                   )}
 
                   {searchParams.source && (
-                    <View className="flex-row items-center bg-white p-3 rounded-lg border border-gray-200 justify-between">
-                      <Text className="text-sm font-semibold text-gray-700">source:</Text>
+                    <View className="flex-row items-center bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 justify-between">
+                      <Text className="text-sm font-semibold text-gray-700 dark:text-gray-300">source:</Text>
                       <Text
                         testID="deeplink-param-source"
-                        className="text-sm font-bold text-purple-600 font-mono"
+                        className="text-sm font-bold text-purple-600 dark:text-purple-400 font-mono"
                       >
                         {String(searchParams.source)}
                       </Text>
@@ -120,8 +116,8 @@ export default function DeepLinkScreen() {
                   )}
 
                   {searchParams.user && (
-                    <View className="flex-row items-center bg-white p-3 rounded-lg border border-gray-200 justify-between">
-                      <Text className="text-sm font-semibold text-gray-700">user:</Text>
+                    <View className="flex-row items-center bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 justify-between">
+                      <Text className="text-sm font-semibold text-gray-700 dark:text-gray-300">user:</Text>
                       <Text
                         testID="deeplink-param-user"
                         className="text-sm font-bold text-green-600 font-mono"
@@ -135,11 +131,11 @@ export default function DeepLinkScreen() {
                   {Object.entries(searchParams).map(([key, val]) => {
                     if (['promo', 'source', 'user'].includes(key)) return null;
                     return (
-                      <View key={key} className="flex-row items-center bg-white p-3 rounded-lg border border-gray-200 justify-between">
-                        <Text className="text-sm font-semibold text-gray-700">{key}:</Text>
+                      <View key={key} className="flex-row items-center bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 justify-between">
+                        <Text className="text-sm font-semibold text-gray-700 dark:text-gray-300">{key}:</Text>
                         <Text
                           testID={`deeplink-param-${key}`}
-                          className="text-sm font-bold text-gray-800 font-mono"
+                          className="text-sm font-bold text-gray-800 dark:text-gray-200 font-mono"
                         >
                           {String(val)}
                         </Text>
@@ -151,15 +147,15 @@ export default function DeepLinkScreen() {
                     testID="clear-deeplink-params-button"
                     accessibilityLabel="Clear Parameters"
                     onPress={clearParams}
-                    className="mt-3 bg-red-100 active:bg-red-200 rounded-lg py-2 px-3 items-center"
+                    className="mt-3 bg-red-100 dark:bg-red-900/30 active:bg-red-200 rounded-lg py-2 px-3 items-center"
                   >
-                    <Text className="text-red-700 font-semibold text-xs">
+                    <Text className="text-red-700 dark:text-red-300 font-semibold text-xs">
                       Clear Parameters
                     </Text>
                   </Pressable>
                 </View>
               ) : (
-                <Text testID="deeplink-no-params-text" className="text-sm text-gray-500 italic text-center py-2">
+                <Text testID="deeplink-no-params-text" className="text-sm text-gray-500 dark:text-gray-400 italic text-center py-2">
                   No query parameters present in this deep link invocation.
                 </Text>
               )}

@@ -20,7 +20,7 @@ const buttonTexts = [
 export default function DynamicLoginDemo() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [currentButtonText, setCurrentButtonText] = useState(() => 
+  const [currentButtonText] = useState(() =>
     buttonTexts[Math.floor(Math.random() * buttonTexts.length)]
   );
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -67,6 +67,8 @@ export default function DynamicLoginDemo() {
         <View className="mb-4">
           <ThemedText className="text-base font-medium mb-2">Email</ThemedText>
           <TextInput
+            testID="login-email-input"
+            accessibilityLabel="Email"
             value={email}
             onChangeText={setEmail}
             placeholder="Enter your email"
@@ -81,6 +83,8 @@ export default function DynamicLoginDemo() {
         <View className="mb-6">
           <ThemedText className="text-base font-medium mb-2">Password</ThemedText>
           <TextInput
+            testID="login-password-input"
+            accessibilityLabel="Password"
             value={password}
             onChangeText={setPassword}
             placeholder="Enter your password"
@@ -92,6 +96,8 @@ export default function DynamicLoginDemo() {
 
         {/* Dynamic Submit Button */}
         <Pressable
+          testID="login-submit-button"
+          accessibilityRole="button"
           onPress={handleSubmit}
           className="bg-blue-500 p-4 rounded-lg active:bg-blue-600 mb-2"
         >
@@ -102,7 +108,7 @@ export default function DynamicLoginDemo() {
 
         {/* Validation Text */}
         {isLoggedIn && (
-          <ThemedText className="text-center text-green-600 dark:text-green-400 font-medium">
+          <ThemedText testID="login-success-message" className="text-center text-green-600 dark:text-green-400 font-medium">
             Successfully signed in!
           </ThemedText>
         )}

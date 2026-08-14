@@ -117,6 +117,7 @@ export default function ApiValidationDemo() {
       setTimestamp(data.timestamp || null);
       setGetError('');
     } catch (error) {
+      console.error('Error fetching code:', error);
       setGetError('Error fetching code');
     } finally {
       setLoading(false);
@@ -185,11 +186,11 @@ export default function ApiValidationDemo() {
               <ActivityIndicator size="small" color="#3B82F6" />
             ) : (
               <>
-                <ThemedText className="text-xl font-bold text-blue-600 dark:text-blue-400 mb-1">
+                <ThemedText testID="api-code-value" className="text-xl font-bold text-blue-600 dark:text-blue-400 mb-1">
                   {code}
                 </ThemedText>
                 {timestamp && (
-                  <ThemedText className="text-xs text-gray-500 dark:text-gray-500">
+                  <ThemedText testID="api-code-timestamp" className="text-xs text-gray-500 dark:text-gray-500">
                     {formatTimestamp(timestamp)}
                   </ThemedText>
                 )}
@@ -198,6 +199,9 @@ export default function ApiValidationDemo() {
           </View>
 
           <Pressable
+            testID="refresh-code-button"
+            accessibilityLabel="Refresh Code"
+            accessibilityRole="button"
             onPress={fetchCode}
             className="bg-blue-500 rounded-xl py-3 px-6 active:bg-blue-600"
             disabled={loading}
@@ -208,7 +212,7 @@ export default function ApiValidationDemo() {
           </Pressable>
 
           {getError && (
-            <ThemedText className="text-red-500 text-sm mt-3">{getError}</ThemedText>
+            <ThemedText testID="api-get-error" className="text-red-500 text-sm mt-3">{getError}</ThemedText>
           )}
         </View>
 
@@ -229,17 +233,17 @@ export default function ApiValidationDemo() {
             </ThemedText>
             {lastPost ? (
               <>
-                <ThemedText className="text-xs font-mono text-gray-800 dark:text-gray-200">
+                <ThemedText testID="api-post-payload" className="text-xs font-mono text-gray-800 dark:text-gray-200">
                   {JSON.stringify(lastPost, null, 2)}
                 </ThemedText>
                 {lastPostTimestamp && (
-                  <ThemedText className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                  <ThemedText testID="api-post-timestamp" className="text-xs text-gray-500 dark:text-gray-500 mt-2">
                     {formatTimestamp(lastPostTimestamp)}
                   </ThemedText>
                 )}
               </>
             ) : (
-              <ThemedText className="text-sm text-gray-500 dark:text-gray-500 italic">
+              <ThemedText testID="api-post-empty" className="text-sm text-gray-500 dark:text-gray-500 italic">
                 No POST received yet
               </ThemedText>
             )}
@@ -263,17 +267,17 @@ export default function ApiValidationDemo() {
             </ThemedText>
             {lastPut ? (
               <>
-                <ThemedText className="text-xs font-mono text-gray-800 dark:text-gray-200">
+                <ThemedText testID="api-put-payload" className="text-xs font-mono text-gray-800 dark:text-gray-200">
                   {JSON.stringify(lastPut, null, 2)}
                 </ThemedText>
                 {lastPutTimestamp && (
-                  <ThemedText className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                  <ThemedText testID="api-put-timestamp" className="text-xs text-gray-500 dark:text-gray-500 mt-2">
                     {formatTimestamp(lastPutTimestamp)}
                   </ThemedText>
                 )}
               </>
             ) : (
-              <ThemedText className="text-sm text-gray-500 dark:text-gray-500 italic">
+              <ThemedText testID="api-put-empty" className="text-sm text-gray-500 dark:text-gray-500 italic">
                 No PUT received yet
               </ThemedText>
             )}
@@ -297,17 +301,17 @@ export default function ApiValidationDemo() {
             </ThemedText>
             {lastPatch ? (
               <>
-                <ThemedText className="text-xs font-mono text-gray-800 dark:text-gray-200">
+                <ThemedText testID="api-patch-payload" className="text-xs font-mono text-gray-800 dark:text-gray-200">
                   {JSON.stringify(lastPatch, null, 2)}
                 </ThemedText>
                 {lastPatchTimestamp && (
-                  <ThemedText className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                  <ThemedText testID="api-patch-timestamp" className="text-xs text-gray-500 dark:text-gray-500 mt-2">
                     {formatTimestamp(lastPatchTimestamp)}
                   </ThemedText>
                 )}
               </>
             ) : (
-              <ThemedText className="text-sm text-gray-500 dark:text-gray-500 italic">
+              <ThemedText testID="api-patch-empty" className="text-sm text-gray-500 dark:text-gray-500 italic">
                 No PATCH received yet
               </ThemedText>
             )}
@@ -333,7 +337,7 @@ export default function ApiValidationDemo() {
               <View className="bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800 rounded-lg p-4">
                 <View className="flex-row items-center mb-2">
                   <Ionicons name="checkmark-circle" size={24} color="#22C55E" />
-                  <ThemedText className="text-green-700 dark:text-green-300 font-semibold ml-2">
+                  <ThemedText testID="api-delete-status" className="text-green-700 dark:text-green-300 font-semibold ml-2">
                     Element is visible
                   </ThemedText>
                 </View>
@@ -345,7 +349,7 @@ export default function ApiValidationDemo() {
               <View className="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-lg p-4">
                 <View className="flex-row items-center mb-2">
                   <Ionicons name="close-circle" size={24} color="#EF4444" />
-                  <ThemedText className="text-red-700 dark:text-red-300 font-semibold ml-2">
+                  <ThemedText testID="api-delete-status" className="text-red-700 dark:text-red-300 font-semibold ml-2">
                     Element has been deleted
                   </ThemedText>
                 </View>
@@ -353,7 +357,7 @@ export default function ApiValidationDemo() {
                   Pull to refresh to restore it
                 </ThemedText>
                 {lastDeleteTimestamp && (
-                  <ThemedText className="text-xs text-red-500 dark:text-red-500">
+                  <ThemedText testID="api-delete-timestamp" className="text-xs text-red-500 dark:text-red-500">
                     Deleted at: {formatTimestamp(lastDeleteTimestamp)}
                   </ThemedText>
                 )}

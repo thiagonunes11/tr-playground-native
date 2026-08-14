@@ -40,10 +40,16 @@ export default function DeleteElementsDemo() {
     setLastAction(`Deleted: "${itemToDelete?.text}"`);
   };
 
-  const renderItem = ({ item }: { item: ListItem }) => (
-    <View className="flex-row items-center justify-between p-3 mb-2 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+  const renderItem = ({ item, index }: { item: ListItem; index: number }) => (
+    <View
+      testID={`element-item-${index}`}
+      className="flex-row items-center justify-between p-3 mb-2 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600"
+    >
       <ThemedText className="flex-1 text-base">{item.text}</ThemedText>
       <Pressable
+        testID={`delete-element-button-${index}`}
+        accessibilityLabel={`Delete ${item.text}`}
+        accessibilityRole="button"
         onPress={() => deleteItem(item.id)}
         className="w-8 h-8 bg-red-500 rounded-full items-center justify-center active:bg-red-600"
       >
@@ -82,6 +88,8 @@ export default function DeleteElementsDemo() {
         </ThemedText>
         <View className="flex-row mb-6">
           <TextInput
+            testID="new-element-input"
+            accessibilityLabel="Enter text for new element"
             value={newItemText}
             onChangeText={setNewItemText}
             placeholder="Enter text for new element"
@@ -89,6 +97,9 @@ export default function DeleteElementsDemo() {
             className="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-black dark:text-white bg-white dark:bg-gray-800"
           />
           <Pressable
+            testID="add-element-button"
+            accessibilityLabel="Add element"
+            accessibilityRole="button"
             onPress={addItem}
             className="w-10 h-10 bg-blue-500 rounded-full items-center justify-center active:bg-blue-600 ml-6"
           >
@@ -98,13 +109,13 @@ export default function DeleteElementsDemo() {
 
         {/* Items list */}
         <View className="min-h-[200px]">
-          <ThemedText className="text-lg font-semibold mb-2">
+          <ThemedText testID="element-count" className="text-lg font-semibold mb-2">
             Elements ({items.length})
           </ThemedText>
 
           {items.length === 0 ? (
             <View className="justify-center items-center py-8">
-              <ThemedText className="text-gray-500 text-center">
+              <ThemedText testID="elements-empty-message" className="text-gray-500 text-center">
                 No elements yet. Add some using the input above.
               </ThemedText>
             </View>
@@ -123,7 +134,7 @@ export default function DeleteElementsDemo() {
       {/* Last action feedback */}
       {lastAction && (
         <View className="mt-4 p-3 bg-green-100 dark:bg-green-900/20 rounded-lg">
-          <ThemedText className="text-center text-green-800 dark:text-green-200">
+          <ThemedText testID="last-action-message" className="text-center text-green-800 dark:text-green-200">
             {lastAction}
           </ThemedText>
         </View>

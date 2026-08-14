@@ -5,7 +5,15 @@ import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import '../global.css';
 
+import { ThemeToggle } from '@/components/theme-toggle';
+import { DEMOS } from '@/constants/demos';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+
+/** Keeps the toggle reachable from every demo, not just the home screen */
+const demoScreenOptions = {
+  headerShown: true,
+  headerRight: () => <ThemeToggle />,
+};
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -15,26 +23,21 @@ export default function RootLayout() {
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack>
           <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="demos/biometric-authentication" options={{ headerShown: true, title: 'Biometric Authentication' }} />
-          <Stack.Screen name="demos/web-view" options={{ headerShown: true, title: 'WebView' }} />
-          <Stack.Screen name="demos/geo-location" options={{ headerShown: true, title: 'Geo Location' }} />
-          <Stack.Screen name="demos/external-browser" options={{ headerShown: true, title: 'External Browser' }} />
-          <Stack.Screen name="demos/deep-link" options={{ headerShown: true, title: 'Deep Links' }} />
-          <Stack.Screen name="demos/button-tap" options={{ headerShown: true, title: 'Button Tap' }} />
-          <Stack.Screen name="demos/camera-validation" options={{ headerShown: true, title: 'Camera Validation' }} />
-          <Stack.Screen name="demos/checkbox-interaction" options={{ headerShown: true, title: 'Checkbox Interaction' }} />
-          <Stack.Screen name="demos/audio-validation" options={{ headerShown: true, title: 'Audio Validation' }} />
-          <Stack.Screen name="demos/delete-elements" options={{ headerShown: true, title: 'Delete Elements' }} />
-          <Stack.Screen name="demos/date-picker" options={{ headerShown: true, title: 'Date Picker' }} />
-          <Stack.Screen name="demos/dynamic-login" options={{ headerShown: true, title: 'Dynamic Login Text' }} />
-          <Stack.Screen name="demos/swipe-horizontal" options={{ headerShown: true, title: 'Swipe Horizontal' }} />
-          <Stack.Screen name="demos/swipe-vertical" options={{ headerShown: true, title: 'Swipe Vertical' }} />
-          <Stack.Screen name="demos/counter" options={{ headerShown: true, title: 'Counter' }} />
-          <Stack.Screen name="demos/api-validation" options={{ headerShown: true, title: 'API Validation' }} />
-          <Stack.Screen name="demos/shopping-cart" options={{ headerShown: true, title: 'Shopping Cart' }} />
-          <Stack.Screen name="demos/file-download" options={{ headerShown: true, title: 'File Download' }} />
-          <Stack.Screen name="demos/file-upload" options={{ headerShown: true, title: 'File Upload' }} />
-          <Stack.Screen name="demos/ocr-check" options={{ headerShown: true, title: 'OCR Check' }} />
+
+          {/* Derived from DEMOS so a new demo only has to be registered once */}
+          {DEMOS.map((demo) => (
+            <Stack.Screen
+              key={demo.id}
+              name={demo.route.replace(/^\//, '')}
+              options={{ ...demoScreenOptions, title: demo.title }}
+            />
+          ))}
+
+          {/* Reachable only through a deep link, so it is intentionally absent from DEMOS */}
+          <Stack.Screen
+            name="demos/deep-link"
+            options={{ ...demoScreenOptions, title: 'Deep Links' }}
+          />
         </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>

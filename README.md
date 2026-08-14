@@ -27,7 +27,7 @@ testRigor Playground is a mobile application designed to provide interactive dem
 
 ## ✨ Features
 
-### Available Demos (19 home demos + Deep Link target route)
+### Available Demos (20 home demos + Deep Link target route)
 
 | Demo                        | Description                                              |
 | --------------------------- | -------------------------------------------------------- |
@@ -41,6 +41,7 @@ testRigor Playground is a mobile application designed to provide interactive dem
 | 🔊 **Audio Validation**     | Test audio playback functionality                        |
 | 🗑️ **Delete Elements**      | Add and delete elements from a list                      |
 | 📅 **Date Picker**          | Choose dates and validate picker functionality           |
+| 📝 **Form Inputs**          | Native text fields with Enter/Return handling and a dropdown |
 | 🔑 **Dynamic Login**        | Login form with random button text                       |
 | ↔️ **Swipe Horizontal**     | Test horizontal swipe gestures                           |
 | ↕️ **Swipe Vertical**       | Test vertical swipe gestures                             |

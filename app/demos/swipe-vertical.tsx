@@ -10,7 +10,7 @@ export default function SwipeVerticalDemo() {
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
-      onPanResponderRelease: (evt, gestureState) => {
+      onPanResponderRelease: (_evt, gestureState) => {
         const { dx, dy } = gestureState;
 
         // Check if it's a vertical swipe (dy > dx)
@@ -57,6 +57,8 @@ export default function SwipeVerticalDemo() {
         </ThemedText>
 
         <View
+          testID="swipe-vertical-area"
+          accessibilityLabel="Swipe detection area"
           {...panResponder.current.panHandlers}
           className="h-48 bg-gray-50 dark:bg-gray-700 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 items-center justify-center"
         >
@@ -80,11 +82,11 @@ export default function SwipeVerticalDemo() {
 
           <View className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
             <ThemedText className="text-base mb-1">
-              Total Swipes: <ThemedText className="font-bold">{swipeCount}</ThemedText>
+              Total Swipes: <ThemedText testID="swipe-count" className="font-bold">{swipeCount}</ThemedText>
             </ThemedText>
             {swipeDirection && (
               <ThemedText className="text-base">
-                Last Swipe: <ThemedText className="font-bold text-blue-600 dark:text-blue-400">{swipeDirection}</ThemedText>
+                Last Swipe: <ThemedText testID="swipe-last-direction" className="font-bold text-blue-600 dark:text-blue-400">{swipeDirection}</ThemedText>
               </ThemedText>
             )}
           </View>
@@ -93,7 +95,7 @@ export default function SwipeVerticalDemo() {
         {/* Validation Text */}
         {swipeCount > 0 && (
           <View className="mt-4 p-3 bg-green-100 dark:bg-green-900/20 rounded-lg">
-            <ThemedText className="text-center text-green-800 dark:text-green-200 font-medium">
+            <ThemedText testID="swipe-success-message" className="text-center text-green-800 dark:text-green-200 font-medium">
               Vertical swipe validation successful! Detected {swipeCount} swipe{swipeCount > 1 ? 's' : ''}.
             </ThemedText>
           </View>

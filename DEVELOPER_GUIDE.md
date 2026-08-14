@@ -221,6 +221,36 @@ The application uses a consistent color scheme:
 - **Card Background**: `#FFFFFF` (white)
 - **Border**: `#F3F4F6` (gray-100)
 
+### Dark mode
+
+Every screen supports both schemes, so pair each colour utility with a `dark:`
+variant. The conventions used across the demos:
+
+| Light | Dark |
+| --- | --- |
+| `bg-gray-50` (page) | `dark:bg-gray-900` |
+| `bg-white` (card) | `dark:bg-gray-800` |
+| `bg-gray-50` (inner panel) | `dark:bg-gray-700` |
+| `text-black` | `dark:text-white` |
+| `text-gray-600` | `dark:text-gray-400` |
+| `border-gray-100` / `border-gray-200` | `dark:border-gray-700` |
+| `bg-blue-100` (icon container) | `dark:bg-blue-900/30` |
+
+The scheme can be switched in-app with the toggle on the home screen and in every
+demo header (`components/theme-toggle.tsx`, `testID="theme-toggle-button"`). It
+starts out following the device and overrides it once tapped.
+
+**Read the scheme from `@/hooks/use-color-scheme`, never from `react-native`
+directly.** NativeWind's `dark:` variants follow NativeWind's own store, so a
+component reading React Native's `useColorScheme` would ignore the toggle and
+drift out of sync with the classes around it. That hook resolves NativeWind's
+value first and falls back to the device.
+
+Do not hardcode `headerStyle` / `headerTintColor` on a screen. The root layout's
+`ThemeProvider` already themes the header, and a hardcoded colour survives the
+toggle. `camera-validation` is the one deliberate exception, since its viewfinder
+header stays dark in both schemes.
+
 ### Common Components
 
 **Icon Container:**
@@ -296,6 +326,7 @@ npm run start:dev
 | Camera Validation | `expo-camera` | Requires camera permission |
 | Audio Validation | `expo-audio` | Uses `useAudioPlayer` hooks |
 | Date Picker | `@react-native-community/datetimepicker` | Platform-native picker |
+| Form Inputs | `@react-native-picker/picker` | Renders `android.widget.Spinner` on Android; bundled in Expo Go |
 | File Upload | `expo-document-picker` | Opens system file picker |
 | File Download | `expo-file-system` | Writes to device storage |
 | External Browser | — | Uses `Linking.openURL`; works in Expo Go |
@@ -594,6 +625,72 @@ If you see "Current location is unavailable", set a mock location in the emulato
 2. Go to **Location**
 3. Set latitude/longitude or pick a point on the map
 4. Tap **Get Location** again in the demo
+
+## Example: Form Inputs Demo
+
+`app/demos/form-inputs.tsx` covers two testRigor commands on one screen: `enter`
+(keyboard Enter/Return key on native text fields) and `select` (native dropdown).
+
+### Predictable content and testIDs
+
+| Element | `testID` | Expected value |
+|---|---|---|
+| Full name field | `form-name-input` | — |
+| Email field | `form-email-input` | — |
+| Phone field | `form-phone-input` | — |
+| Notes field (multiline) | `form-notes-input` | — |
+| Notes line counter | `form-notes-line-count` | `Lines: 1` before any newline |
+| Enter press counter | `form-enter-count` | `Enter pressed: 0` on load |
+| Last submitted field | `form-last-submitted-field` | `Last submitted field: none` on load |
+| Country dropdown | `form-country-picker` | `Select a country` on load |
+| Selected country label | `form-selected-country` | `Selected country: none` on load |
+| Register button | `form-submit-button` | — |
+| Submit summary | `form-submit-summary` | Rendered only after tapping Register |
+
+### Sample testRigor flow
+
+```
+enter "Ada Lovelace" into "Full Name"
+enter enter
+check that page contains "Last submitted field: Full Name"
+check that page contains "Enter pressed: 1"
+select "Brazil" from "Country"
+check that page contains "Selected country: Brazil"
+enter "ada@testrigor.com" into "Email"
+tap "Register"
+check that page contains "Ada Lovelace from Brazil registered successfully!"
+```
+
+### Implementation notes
+
+- The single-line fields use `returnKeyType` plus `onSubmitEditing`, and
+  `submitBehavior="submit"` keeps the keyboard open so focus can advance to the
+  next field instead of dismissing it.
+- `form-enter-count` and `form-last-submitted-field` exist so a test can assert
+  the Enter key actually fired — without them the `enter` command has no
+  observable effect.
+- The Notes field is deliberately `multiline`, where Enter inserts a line break
+  rather than submitting. `form-notes-line-count` makes that contrast assertable.
+- The dropdown uses `mode="dropdown"` so Android renders a real
+  `android.widget.Spinner`, which is what the `select` command resolves. On iOS
+  the same component renders a `UIPickerView` wheel, so the interaction differs.
+- The closed spinner sits on the app's own card, so its text and arrow colours
+  come from the `Picker` `style` and `dropdownIconColor` props and follow the
+  in-app theme toggle. The open popup is drawn with Android's theme, which
+  follows the OS instead, so `Picker.Item` deliberately sets no `color` — a
+  hardcoded one goes unreadable whenever the OS and the in-app toggle disagree.
+
+### Register in `constants/demos.ts`
+
+```typescript
+{
+  id: 'form-inputs',
+  title: 'Form Inputs',
+  description: 'Native text fields with Enter/Return handling and a native dropdown',
+  icon: 'create-outline',
+  route: '/demos/form-inputs',
+}
+```
 
 ## Additional Resources
 
