@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
-import { Stack } from 'expo-router';
+
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -214,36 +214,29 @@ export default function GeoLocationScreen() {
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: 'Geo Location',
-          headerStyle: { backgroundColor: '#fff' },
-          headerTintColor: '#000',
-        }}
-      />
-      <ScrollView className="flex-1 bg-gray-50">
+      <ScrollView className="flex-1 bg-gray-50 dark:bg-gray-900">
         <View className="p-6">
-          <View className="bg-white rounded-2xl p-6 mb-6 border-2 border-gray-100">
+          <View className="bg-white dark:bg-gray-800 rounded-2xl p-6 mb-6 border-2 border-gray-100 dark:border-gray-700">
             <View className="flex-row items-center mb-4">
-              <View className="bg-blue-100 rounded-xl p-3 mr-4">
+              <View className="bg-blue-100 dark:bg-blue-900/30 rounded-xl p-3 mr-4">
                 <Ionicons name="location-outline" size={32} color="#3B82F6" />
               </View>
               <View className="flex-1">
-                <Text className="text-2xl font-bold text-black mb-1">
+                <Text className="text-2xl font-bold text-black dark:text-white mb-1">
                   Geo Location
                 </Text>
               </View>
             </View>
-            <Text className="text-base text-gray-600 leading-6">
+            <Text className="text-base text-gray-600 dark:text-gray-400 leading-6">
               Enable geolocation and validate that the device returns a readable location.
             </Text>
           </View>
 {/*
           {Platform.OS === 'android' && (
-            <View className="bg-blue-50 rounded-2xl p-4 mb-6 border-2 border-blue-100">
+            <View className="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-4 mb-6 border-2 border-blue-100">
               <View className="flex-row items-start">
                 <Ionicons name="information-circle-outline" size={22} color="#3B82F6" />
-                <Text className="text-blue-800 text-sm leading-5 ml-3 flex-1">
+                <Text className="text-blue-800 dark:text-blue-200 text-sm leading-5 ml-3 flex-1">
                   On Android emulators, set a mock location via Extended Controls (⋯) →
                   Location before tapping Get Location.
                 </Text>
@@ -251,8 +244,8 @@ export default function GeoLocationScreen() {
             </View>
           )}
 */}
-          <View className="bg-white rounded-2xl p-6 border-2 border-gray-100">
-            <Text className="text-lg font-semibold text-black mb-4">
+          <View className="bg-white dark:bg-gray-800 rounded-2xl p-6 border-2 border-gray-100 dark:border-gray-700">
+            <Text className="text-lg font-semibold text-black dark:text-white mb-4">
               Get Current Location
             </Text>
 
@@ -260,8 +253,8 @@ export default function GeoLocationScreen() {
               <View
                 className={`rounded-xl p-4 mb-4 ${
                   permissionGranted
-                    ? 'bg-green-50 border border-green-200'
-                    : 'bg-red-50 border border-red-200'
+                    ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
+                    : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
                 }`}
               >
                 <View className="flex-row items-center">
@@ -272,7 +265,7 @@ export default function GeoLocationScreen() {
                   />
                   <Text
                     className={`font-medium ml-2 ${
-                      permissionGranted ? 'text-green-800' : 'text-red-800'
+                      permissionGranted ? 'text-green-800 dark:text-green-200' : 'text-red-800 dark:text-red-200'
                     }`}
                   >
                     {permissionGranted
@@ -287,7 +280,7 @@ export default function GeoLocationScreen() {
               <View
                 className={`rounded-xl p-4 mb-4 ${
                   servicesEnabled
-                    ? 'bg-green-50 border border-green-200'
+                    ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
                     : 'bg-amber-50 border border-amber-200'
                 }`}
               >
@@ -299,7 +292,7 @@ export default function GeoLocationScreen() {
                   />
                   <Text
                     className={`font-medium ml-2 flex-1 ${
-                      servicesEnabled ? 'text-green-800' : 'text-amber-800'
+                      servicesEnabled ? 'text-green-800 dark:text-green-200' : 'text-amber-800'
                     }`}
                   >
                     {servicesEnabled
@@ -330,13 +323,13 @@ export default function GeoLocationScreen() {
             </Pressable>
 
             {location && (
-              <View className="mt-6 bg-gray-50 rounded-xl p-4 border border-gray-200">
-                <Text className="text-sm text-gray-600 mb-3">Current location:</Text>
-                <Text testID="location-address" className="text-lg font-semibold text-black mb-2">
+              <View className="mt-6 bg-gray-50 dark:bg-gray-700 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+                <Text className="text-sm text-gray-600 dark:text-gray-400 mb-3">Current location:</Text>
+                <Text testID="location-address" className="text-lg font-semibold text-black dark:text-white mb-2">
                   {location.address}
                 </Text>
                 {location.accuracy !== null && (
-                  <Text testID="location-accuracy" className="text-sm text-gray-600">
+                  <Text testID="location-accuracy" className="text-sm text-gray-600 dark:text-gray-400">
                     Accuracy: ±{location.accuracy.toFixed(1)} meters
                   </Text>
                 )}
@@ -347,8 +340,8 @@ export default function GeoLocationScreen() {
               <View
                 className={`rounded-xl p-4 border mt-4 ${
                   isValid
-                    ? 'bg-green-50 border-green-200'
-                    : 'bg-red-50 border-red-200'
+                    ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                    : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
                 }`}
               >
                 <View className="flex-row items-center">
@@ -360,7 +353,7 @@ export default function GeoLocationScreen() {
                   <Text
                     testID="location-validation-message"
                     className={`font-medium ml-2 flex-1 ${
-                      isValid ? 'text-green-800' : 'text-red-800'
+                      isValid ? 'text-green-800 dark:text-green-200' : 'text-red-800 dark:text-red-200'
                     }`}
                   >
                     {validationMessage}

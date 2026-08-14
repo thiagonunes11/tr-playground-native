@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as LocalAuthentication from 'expo-local-authentication';
-import { Stack } from 'expo-router';
+
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AppState, Platform, Pressable, ScrollView, Text, View } from 'react-native';
 
@@ -34,9 +34,9 @@ const SECURITY_LEVEL_LABELS: Record<LocalAuthentication.SecurityLevel, string> =
 
 function StatusRow({ label, value, testID }: { label: string; value: string; testID: string }) {
   return (
-    <View className="flex-row justify-between items-start py-3 border-b border-gray-100">
-      <Text className="text-gray-600 flex-1 mr-4">{label}</Text>
-      <Text testID={testID} className="text-black font-semibold text-right flex-1">
+    <View className="flex-row justify-between items-start py-3 border-b border-gray-100 dark:border-gray-700">
+      <Text className="text-gray-600 dark:text-gray-400 flex-1 mr-4">{label}</Text>
+      <Text testID={testID} className="text-black dark:text-white font-semibold text-right flex-1">
         {value}
       </Text>
     </View>
@@ -136,132 +136,123 @@ export default function BiometricAuthenticationScreen() {
     : null;
 
   return (
-    <>
-      <Stack.Screen
-        options={{
-          title: 'Biometric Authentication',
-          headerStyle: { backgroundColor: '#fff' },
-          headerTintColor: '#000',
-        }}
-      />
-      <ScrollView className="flex-1 bg-gray-50">
-        <View className="p-6">
-          <View className="bg-white rounded-2xl p-6 mb-6 border-2 border-gray-100">
-            <View className="flex-row items-center mb-4">
-              <View className="bg-blue-100 rounded-xl p-3 mr-4">
-                <Ionicons name="finger-print-outline" size={32} color="#3B82F6" />
-              </View>
-              <View className="flex-1">
-                <Text className="text-2xl font-bold text-black mb-1">
-                  Biometric Authentication
-                </Text>
-                <Text testID="biometric-platform" className="text-sm font-medium text-blue-600">
-                  {Platform.OS === 'ios' ? 'iOS: Face ID or Touch ID' : 'Android: system biometrics'}
-                </Text>
-              </View>
+    <ScrollView className="flex-1 bg-gray-50 dark:bg-gray-900">
+      <View className="p-6">
+        <View className="bg-white dark:bg-gray-800 rounded-2xl p-6 mb-6 border-2 border-gray-100 dark:border-gray-700">
+          <View className="flex-row items-center mb-4">
+            <View className="bg-blue-100 dark:bg-blue-900/30 rounded-xl p-3 mr-4">
+              <Ionicons name="finger-print-outline" size={32} color="#3B82F6" />
             </View>
-            <Text className="text-base text-gray-600 leading-6">
-              Validate biometric availability and native authentication outcomes on both platforms.
-            </Text>
-          </View>
-
-          <View className="bg-white rounded-2xl p-6 mb-6 border-2 border-gray-100">
-            <View className="flex-row justify-between items-center mb-3">
-              <Text className="text-lg font-semibold text-black">Device Status</Text>
-              <Pressable
-                testID="refresh-biometric-status"
-                accessibilityLabel="Refresh biometric status"
-                onPress={refreshStatus}
-                disabled={isRefreshing}
-                className="bg-gray-100 rounded-lg px-3 py-2 active:bg-gray-200"
-              >
-                <Text className="text-blue-600 font-semibold">
-                  {isRefreshing ? 'Checking...' : 'Refresh'}
-                </Text>
-              </Pressable>
+            <View className="flex-1">
+              <Text className="text-2xl font-bold text-black dark:text-white mb-1">
+                Biometric Authentication
+              </Text>
+              <Text testID="biometric-platform" className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                {Platform.OS === 'ios' ? 'iOS: Face ID or Touch ID' : 'Android: system biometrics'}
+              </Text>
             </View>
-
-            <StatusRow label="Hardware available" value={status ? (status.hasHardware ? 'Yes' : 'No') : 'Checking...'} testID="biometric-hardware-status" />
-            <StatusRow label="Biometrics enrolled" value={status ? (status.isEnrolled ? 'Yes' : 'No') : 'Checking...'} testID="biometric-enrollment-status" />
-            <StatusRow label="Supported types" value={status ? biometricNames : 'Checking...'} testID="biometric-supported-types" />
-            <StatusRow label="Enrolled security level" value={status ? SECURITY_LEVEL_LABELS[status.securityLevel] : 'Checking...'} testID="biometric-security-level" />
-
-            {statusError && (
-              <View testID="biometric-status-error" className="bg-red-50 rounded-xl p-4 border border-red-200 mt-4">
-                <Text className="text-red-800">{statusError}</Text>
-              </View>
-            )}
           </View>
+          <Text className="text-base text-gray-600 dark:text-gray-400 leading-6">
+            Validate biometric availability and native authentication outcomes on both platforms.
+          </Text>
+        </View>
 
-          <View className="bg-white rounded-2xl p-6 mb-6 border-2 border-gray-100">
-            <Text className="text-lg font-semibold text-black mb-2">Authentication Scenarios</Text>
-            <Text className="text-sm text-gray-600 leading-5 mb-5">
-              The buttons remain available when biometrics are absent so QA can validate native error results.
-            </Text>
-
+        <View className="bg-white dark:bg-gray-800 rounded-2xl p-6 mb-6 border-2 border-gray-100 dark:border-gray-700">
+          <View className="flex-row justify-between items-center mb-3">
+            <Text className="text-lg font-semibold text-black dark:text-white">Device Status</Text>
             <Pressable
-              testID="authenticate-biometric-only"
-              accessibilityLabel="Authenticate with biometrics only"
-              onPress={() => authenticate('biometric-only')}
-              disabled={isAuthenticating}
-              className={`rounded-xl py-4 px-6 items-center mb-3 ${isAuthenticating ? 'bg-gray-400' : 'bg-blue-500 active:bg-blue-600'}`}
+              testID="refresh-biometric-status"
+              accessibilityLabel="Refresh biometric status"
+              onPress={refreshStatus}
+              disabled={isRefreshing}
+              className="bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2 active:bg-gray-200 dark:active:bg-gray-600"
             >
-              <View className="flex-row items-center">
-                <Ionicons name="finger-print" size={22} color="#fff" />
-                <Text className="text-white font-semibold text-base ml-2">
-                  {isAuthenticating ? 'Authenticating...' : 'Biometrics Only'}
-                </Text>
-              </View>
-            </Pressable>
-
-            <Pressable
-              testID="authenticate-with-fallback"
-              accessibilityLabel="Authenticate with device credential fallback"
-              onPress={() => authenticate('with-device-credential')}
-              disabled={isAuthenticating}
-              className={`rounded-xl py-4 px-6 items-center ${isAuthenticating ? 'bg-gray-400' : 'bg-gray-700 active:bg-gray-800'}`}
-            >
-              <View className="flex-row items-center">
-                <Ionicons name="keypad-outline" size={22} color="#fff" />
-                <Text className="text-white font-semibold text-base ml-2">
-                  Biometrics or Device Credential
-                </Text>
-              </View>
+              <Text className="text-blue-600 dark:text-blue-400 font-semibold">
+                {isRefreshing ? 'Checking...' : 'Refresh'}
+              </Text>
             </Pressable>
           </View>
 
-          {lastAttempt && (
-            <View
-              testID="biometric-authentication-result"
-              className={`rounded-2xl p-6 mb-6 border-2 ${lastAttempt.result.success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}
-            >
-              <View className="flex-row items-center mb-4">
-                <Ionicons name={lastAttempt.result.success ? 'checkmark-circle' : 'close-circle'} size={28} color={lastAttempt.result.success ? '#16A34A' : '#DC2626'} />
-                <Text testID="biometric-result-status" className={`text-xl font-bold ml-2 ${lastAttempt.result.success ? 'text-green-800' : 'text-red-800'}`}>
-                  {lastAttempt.result.success ? 'Authentication succeeded' : 'Authentication failed'}
-                </Text>
-              </View>
-              <StatusRow label="Mode" value={lastAttempt.mode === 'biometric-only' ? 'Biometrics only' : 'With device credential'} testID="biometric-result-mode" />
-              <StatusRow label="Result code" value={lastAttempt.result.success ? 'success' : lastAttemptError ?? 'unknown'} testID="biometric-result-code" />
-              <StatusRow label="Timestamp" value={lastAttempt.timestamp} testID="biometric-result-timestamp" />
-              {!lastAttempt.result.success && lastAttempt.result.warning && (
-                <Text testID="biometric-result-warning" className="text-red-700 mt-3">
-                  {lastAttempt.result.warning}
-                </Text>
-              )}
+          <StatusRow label="Hardware available" value={status ? (status.hasHardware ? 'Yes' : 'No') : 'Checking...'} testID="biometric-hardware-status" />
+          <StatusRow label="Biometrics enrolled" value={status ? (status.isEnrolled ? 'Yes' : 'No') : 'Checking...'} testID="biometric-enrollment-status" />
+          <StatusRow label="Supported types" value={status ? biometricNames : 'Checking...'} testID="biometric-supported-types" />
+          <StatusRow label="Enrolled security level" value={status ? SECURITY_LEVEL_LABELS[status.securityLevel] : 'Checking...'} testID="biometric-security-level" />
+
+          {statusError && (
+            <View testID="biometric-status-error" className="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 border border-red-200 dark:border-red-800 mt-4">
+              <Text className="text-red-800 dark:text-red-200">{statusError}</Text>
             </View>
           )}
-
-          <View className="bg-blue-50 rounded-2xl p-5 border border-blue-200">
-            <Text className="text-blue-900 font-semibold mb-2">Simulator / emulator testing</Text>
-            <Text className="text-blue-800 leading-5">
-              {Platform.OS === 'ios'
-                ? 'Use Simulator → Features → Face ID or Touch ID to change enrollment and trigger matching or non-matching authentication.'
-                : 'Enroll a fingerprint in the emulator settings, then use the emulator fingerprint controls to send matching or unknown fingerprints.'}
-            </Text>
-          </View>
         </View>
-      </ScrollView>
-    </>
+
+        <View className="bg-white dark:bg-gray-800 rounded-2xl p-6 mb-6 border-2 border-gray-100 dark:border-gray-700">
+          <Text className="text-lg font-semibold text-black dark:text-white mb-2">Authentication Scenarios</Text>
+          <Text className="text-sm text-gray-600 dark:text-gray-400 leading-5 mb-5">
+            The buttons remain available when biometrics are absent so QA can validate native error results.
+          </Text>
+
+          <Pressable
+            testID="authenticate-biometric-only"
+            accessibilityLabel="Authenticate with biometrics only"
+            onPress={() => authenticate('biometric-only')}
+            disabled={isAuthenticating}
+            className={`rounded-xl py-4 px-6 items-center mb-3 ${isAuthenticating ? 'bg-gray-400' : 'bg-blue-500 active:bg-blue-600'}`}
+          >
+            <View className="flex-row items-center">
+              <Ionicons name="finger-print" size={22} color="#fff" />
+              <Text className="text-white font-semibold text-base ml-2">
+                {isAuthenticating ? 'Authenticating...' : 'Biometrics Only'}
+              </Text>
+            </View>
+          </Pressable>
+
+          <Pressable
+            testID="authenticate-with-fallback"
+            accessibilityLabel="Authenticate with device credential fallback"
+            onPress={() => authenticate('with-device-credential')}
+            disabled={isAuthenticating}
+            className={`rounded-xl py-4 px-6 items-center ${isAuthenticating ? 'bg-gray-400' : 'bg-gray-700 active:bg-gray-800'}`}
+          >
+            <View className="flex-row items-center">
+              <Ionicons name="keypad-outline" size={22} color="#fff" />
+              <Text className="text-white font-semibold text-base ml-2">
+                Biometrics or Device Credential
+              </Text>
+            </View>
+          </Pressable>
+        </View>
+
+        {lastAttempt && (
+          <View
+            testID="biometric-authentication-result"
+            className={`rounded-2xl p-6 mb-6 border-2 ${lastAttempt.result.success ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'}`}
+          >
+            <View className="flex-row items-center mb-4">
+              <Ionicons name={lastAttempt.result.success ? 'checkmark-circle' : 'close-circle'} size={28} color={lastAttempt.result.success ? '#16A34A' : '#DC2626'} />
+              <Text testID="biometric-result-status" className={`text-xl font-bold ml-2 ${lastAttempt.result.success ? 'text-green-800 dark:text-green-200' : 'text-red-800 dark:text-red-200'}`}>
+                {lastAttempt.result.success ? 'Authentication succeeded' : 'Authentication failed'}
+              </Text>
+            </View>
+            <StatusRow label="Mode" value={lastAttempt.mode === 'biometric-only' ? 'Biometrics only' : 'With device credential'} testID="biometric-result-mode" />
+            <StatusRow label="Result code" value={lastAttempt.result.success ? 'success' : lastAttemptError ?? 'unknown'} testID="biometric-result-code" />
+            <StatusRow label="Timestamp" value={lastAttempt.timestamp} testID="biometric-result-timestamp" />
+            {!lastAttempt.result.success && lastAttempt.result.warning && (
+              <Text testID="biometric-result-warning" className="text-red-700 dark:text-red-300 mt-3">
+                {lastAttempt.result.warning}
+              </Text>
+            )}
+          </View>
+        )}
+
+        <View className="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-5 border border-blue-200 dark:border-blue-800">
+          <Text className="text-blue-900 dark:text-blue-100 font-semibold mb-2">Simulator / emulator testing</Text>
+          <Text className="text-blue-800 dark:text-blue-200 leading-5">
+            {Platform.OS === 'ios'
+              ? 'Use Simulator → Features → Face ID or Touch ID to change enrollment and trigger matching or non-matching authentication.'
+              : 'Enroll a fingerprint in the emulator settings, then use the emulator fingerprint controls to send matching or unknown fingerprints.'}
+          </Text>
+        </View>
+      </View>
+    </ScrollView>
   );
 }
