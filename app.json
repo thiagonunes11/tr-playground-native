@@ -2,7 +2,7 @@
   "expo": {
     "name": "testRigor Playground",
     "slug": "tr-playground",
-    "version": "0.6.0",
+    "version": "0.7.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
     "scheme": "trplayground",
@@ -16,7 +16,7 @@
       }
     },
     "android": {
-      "versionCode": 6,
+      "versionCode": 7,
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/images/logo.png"
