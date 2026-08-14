@@ -5,14 +5,26 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { Asset } from 'expo-asset';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
+// `.json` is a Metro source extension, so it is imported as a module rather
+// than resolved as an asset like the .pdf and .txt samples below.
+import sampleData from '../../assets/documents/sample-data.json';
+
+interface FileContent {
+  content: string;
+  encoding: 'utf8' | 'base64';
+}
 
 interface DownloadableFile {
   id: string;
   name: string;
-  url: string;
+  /** Name the file is written with on disk, extension included */
+  fileName: string;
   type: string;
   size: string;
   icon: string;
+  mimeType: string;
+  /** Reads this file's real content out of the bundled assets */
+  read: () => Promise<FileContent>;
 }
 
 interface DownloadedFile {
@@ -23,37 +35,59 @@ interface DownloadedFile {
   size: number;
 }
 
+/**
+ * Reads a bundled asset. Binary files must use base64; text files use utf8.
+ */
+async function readAsset(assetModule: number, encoding: 'utf8' | 'base64'): Promise<FileContent> {
+  const asset = Asset.fromModule(assetModule);
+  await asset.downloadAsync();
+
+  const uri = asset.localUri || asset.uri;
+  if (!uri) {
+    throw new Error(`Asset ${asset.name} has no readable URI`);
+  }
+
+  return { content: await FileSystem.readAsStringAsync(uri, { encoding }), encoding };
+}
+
 const SAMPLE_FILES: DownloadableFile[] = [
   {
     id: '1',
     name: 'Sample PDF Document',
-    url: './assets/documents/sample-document.pdf',
+    fileName: 'sample-document.pdf',
     type: 'PDF',
     size: '31.6 KB',
-    icon: 'document-text'
+    icon: 'document-text',
+    mimeType: 'application/pdf',
+    read: () => readAsset(require('../../assets/documents/sample-document.pdf'), 'base64')
   },
   {
     id: '2',
     name: 'Sample Text File',
-    url: './assets/documents/sample-text.txt',
+    fileName: 'sample-text.txt',
     type: 'Text',
-    size: '256 B',
-    icon: 'document'
+    size: '413 B',
+    icon: 'document',
+    mimeType: 'text/plain',
+    // eslint-disable-next-line @typescript-eslint/no-require-imports -- resolved as an
+    // asset via the `txt` entry added to assetExts in metro.config.js
+    read: () => readAsset(require('../../assets/documents/sample-text.txt'), 'utf8')
   },
   {
     id: '3',
     name: 'Sample JSON Data',
-    url: './assets/documents/sample-data.json',
+    fileName: 'sample-data.json',
     type: 'JSON',
-    size: '245 B',
-    icon: 'code-slash'
+    size: '698 B',
+    icon: 'code-slash',
+    mimeType: 'application/json',
+    read: async () => ({ content: JSON.stringify(sampleData, null, 2), encoding: 'utf8' })
   }
 ];
 
 export default function FileDownloadDemo() {
   const [downloads, setDownloads] = useState<{ [key: string]: { progress: number; downloading: boolean; error?: string } }>({});
   const [downloadedFiles, setDownloadedFiles] = useState<DownloadedFile[]>([]);
-  const [refreshing, setRefreshing] = useState(false);
   const [downloadsDirectory, setDownloadsDirectory] = useState<string | null>(null);
 
   useEffect(() => {
@@ -94,135 +128,55 @@ export default function FileDownloadDemo() {
     }
   };
 
-  const loadDownloadedFiles = async () => {
-    try {
-      const downloadsDir = `${FileSystem.documentDirectory}downloads/`;
-      const dirInfo = await FileSystem.getInfoAsync(downloadsDir);
-
-      if (!dirInfo.exists) {
-        await FileSystem.makeDirectoryAsync(downloadsDir, { intermediates: true });
-        return;
-      }
-
-      // In a real app, you'd scan the directory for files
-      // For demo purposes, we'll maintain state
-    } catch (error) {
-      console.error('Error loading downloaded files:', error);
-    }
-  };
-
   const downloadFile = async (file: DownloadableFile) => {
     if (!downloadsDirectory) {
       Alert.alert('Error', 'Downloads directory not initialized. Please try again.');
       return;
     }
 
+    setDownloads(prev => ({
+      ...prev,
+      [file.id]: { progress: 0, downloading: true }
+    }));
+
+    // Simulate download progress while the bundled asset is read and written
+    const progressInterval = setInterval(() => {
+      setDownloads(prev => {
+        const currentProgress = prev[file.id]?.progress || 0;
+        const newProgress = Math.min(currentProgress + 0.1, 0.9);
+        return {
+          ...prev,
+          [file.id]: { progress: newProgress, downloading: true }
+        };
+      });
+    }, 200);
+
     try {
-      setDownloads(prev => ({
-        ...prev,
-        [file.id]: { progress: 0, downloading: true }
-      }));
-
-      // Simulate download progress for local files
-      const progressInterval = setInterval(() => {
-        setDownloads(prev => {
-          const currentProgress = prev[file.id]?.progress || 0;
-          const newProgress = Math.min(currentProgress + 0.1, 0.9);
-          return {
-            ...prev,
-            [file.id]: { progress: newProgress, downloading: true }
-          };
-        });
-      }, 200);
-
-      // Read actual file content from assets using Asset module
-      let content: string;
-      let encoding: 'utf8' | 'base64' = 'utf8';
-
-      try {
-        // Create asset from the file path
-        const asset = Asset.fromModule(require('../../assets/documents/sample-document.pdf'));
-        await asset.downloadAsync();
-
-        if (file.type === 'PDF') {
-          // Read PDF as base64 since it's binary
-          content = await FileSystem.readAsStringAsync(asset.localUri || asset.uri, { encoding: 'base64' });
-          encoding = 'base64';
-        } else {
-          // For text files, we'd need to handle them differently
-          // For now, fallback to generated content for non-PDF files
-          throw new Error('Text file reading not implemented');
-        }
-        console.log(`Read ${file.type} file content, length: ${content.length}`);
-      } catch (readError) {
-        console.error('Error reading file:', readError);
-        // Fallback to generated content if file reading fails
-        if (file.type === 'PDF') {
-          content = '%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\nxref\n0 2\n0000000000 65535 f \n0000000009 00000 n \ntrailer\n<<\n/Size 2\n/Root 1 0 R\n>>\nstartxref\n49\n%%EOF';
-        } else if (file.type === 'JSON') {
-          content = JSON.stringify({
-            title: file.name,
-            type: file.type,
-            downloadedAt: new Date().toISOString(),
-            size: file.size
-          }, null, 2);
-        } else {
-          content = `Sample ${file.type} content for ${file.name}\n\nThis is a test file downloaded on ${new Date().toLocaleString()}\n\nFile type: ${file.type}\nFile size: ${file.size}`;
-        }
-      }
+      const { content, encoding } = await file.read();
+      console.log(`Read ${file.fileName}, ${encoding} length: ${content.length}`);
 
       let fileUri: string;
-      let mimeType: string;
 
-      // Determine MIME type based on file type
-      switch (file.type) {
-        case 'PDF':
-          mimeType = 'application/pdf';
-          break;
-        case 'JSON':
-          mimeType = 'application/json';
-          break;
-        case 'Text':
-        default:
-          mimeType = 'text/plain';
-          break;
-      }
-
-      if (Platform.OS === 'android' && downloadsDirectory && downloadsDirectory.includes('content://')) {
-        // Use Storage Access Framework for Android Downloads folder
-        const fileName = `${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-        console.log('Creating file with MIME type:', mimeType);
-        fileUri = await FileSystem.StorageAccessFramework.createFileAsync(downloadsDirectory, fileName, mimeType);
-
-        if (encoding === 'base64') {
-          // For binary files like PDFs, write as base64
-          await FileSystem.StorageAccessFramework.writeAsStringAsync(fileUri, content, { encoding: 'base64' });
-        } else {
-          // For text files, write as UTF-8
-          await FileSystem.StorageAccessFramework.writeAsStringAsync(fileUri, content);
-        }
+      if (Platform.OS === 'android' && downloadsDirectory.includes('content://')) {
+        // Use Storage Access Framework for the Downloads folder the user picked
+        fileUri = await FileSystem.StorageAccessFramework.createFileAsync(
+          downloadsDirectory,
+          file.fileName,
+          file.mimeType
+        );
+        await FileSystem.StorageAccessFramework.writeAsStringAsync(fileUri, content, { encoding });
         console.log('File created successfully:', fileUri);
       } else {
         // Use regular file system for app storage or iOS
-        const fileName = `${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-        fileUri = `${downloadsDirectory}${fileName}`;
+        fileUri = `${downloadsDirectory}${file.fileName}`;
 
-        // Ensure directory exists for regular file system
-        if (!downloadsDirectory.includes('content://')) {
-          const dirInfo = await FileSystem.getInfoAsync(downloadsDirectory);
-          if (!dirInfo.exists) {
-            await FileSystem.makeDirectoryAsync(downloadsDirectory, { intermediates: true });
-          }
+        const dirInfo = await FileSystem.getInfoAsync(downloadsDirectory);
+        if (!dirInfo.exists) {
+          await FileSystem.makeDirectoryAsync(downloadsDirectory, { intermediates: true });
         }
 
-        if (encoding === 'base64') {
-          await FileSystem.writeAsStringAsync(fileUri, content, { encoding: 'base64' });
-        } else {
-          await FileSystem.writeAsStringAsync(fileUri, content);
-        }
+        await FileSystem.writeAsStringAsync(fileUri, content, { encoding });
       }
-
-      clearInterval(progressInterval);
 
       const fileInfo = await FileSystem.getInfoAsync(fileUri);
       const newDownloadedFile: DownloadedFile = {
@@ -230,7 +184,7 @@ export default function FileDownloadDemo() {
         name: file.name,
         localUri: fileUri,
         downloadTime: new Date(),
-        size: (fileInfo as any).size || 0
+        size: fileInfo.exists ? fileInfo.size : 0
       };
 
       setDownloadedFiles(prev => [newDownloadedFile, ...prev]);
@@ -257,6 +211,10 @@ export default function FileDownloadDemo() {
       }));
 
       Alert.alert('Download Failed', errorMessage);
+    } finally {
+      // Must run on the failure path too, otherwise the progress bar keeps
+      // ticking at 90% forever after an error.
+      clearInterval(progressInterval);
     }
   };
 
@@ -446,7 +404,7 @@ export default function FileDownloadDemo() {
             <Ionicons name="information-circle" size={24} color="#3B82F6" />
             <View className="flex-1 ml-3">
               <ThemedText className="text-sm text-blue-700 dark:text-blue-300 leading-5">
-                Files are saved to the app&apos;s local storage. This demo simulates the download experience with progress tracking and file management.
+                Each file is read from the app&apos;s bundled assets and written to storage with its real content. On Android you can pick a destination folder; otherwise files go to the app&apos;s local storage.
               </ThemedText>
             </View>
           </View>

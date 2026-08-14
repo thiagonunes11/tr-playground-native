@@ -7,6 +7,9 @@ const config = getDefaultConfig(__dirname);
 config.resolver = {
   ...config.resolver,
   useWatchman: false,
+  // `.txt` is not a default asset extension, so the file-download demo could not
+  // bundle assets/documents/sample-text.txt. `.pdf` is already a default.
+  assetExts: [...config.resolver.assetExts, 'txt'],
 };
 
 module.exports = withNativeWind(config, { input: './global.css' });
