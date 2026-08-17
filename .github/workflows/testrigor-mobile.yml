@@ -73,8 +73,6 @@ jobs:
             --token "${{ secrets.TR_ANDROID_SUITE_TOKEN }}" \
             --file-path app.apk \
             --variables-path testrigor-vars.json \
-            --branch "${GITHUB_REF_NAME}" \
-            --commit "${GITHUB_SHA}" \
             ${TR_LABELS:+--labels "$TR_LABELS"} \
             --junit-report-save-path testrigor-android.xml
 
@@ -121,9 +119,10 @@ jobs:
             echo "No .app bundle found in the EAS artifact"
             exit 1
           fi
+          # testRigor validates the extension, so the name must end in .app.zip.
           # -y keeps the symlinks inside the bundle; without it the app fails to launch.
-          (cd "$(dirname "$app")" && zip -qry -X "$GITHUB_WORKSPACE/app.zip" "$(basename "$app")")
-          ls -lh app.zip
+          (cd "$(dirname "$app")" && zip -qry -X "$GITHUB_WORKSPACE/trplayground.app.zip" "$(basename "$app")")
+          ls -lh trplayground.app.zip
 
       - name: Generate the version test data
         env:
@@ -136,10 +135,8 @@ jobs:
         run: |
           testrigor test-suite run "$TR_IOS_SUITE_ID" \
             --token "${{ secrets.TR_IOS_SUITE_TOKEN }}" \
-            --file-path app.zip \
+            --file-path trplayground.app.zip \
             --variables-path testrigor-vars.json \
-            --branch "${GITHUB_REF_NAME}" \
-            --commit "${GITHUB_SHA}" \
             ${TR_LABELS:+--labels "$TR_LABELS"} \
             --junit-report-save-path testrigor-ios.xml
 
