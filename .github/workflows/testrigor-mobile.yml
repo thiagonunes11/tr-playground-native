@@ -15,8 +15,14 @@ name: testRigor Mobile
 
 on:
   push:
+    branches:
+      - main
     tags:
       - "v*"
+    # Docs-only commits do not change the app, so they skip the build.
+    paths-ignore:
+      - "**/*.md"
+      - ".vscode/**"
   workflow_dispatch:
     inputs:
       labels:
