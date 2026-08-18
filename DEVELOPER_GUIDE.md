@@ -702,15 +702,19 @@ there instead of submitting, so the counter must not move while `Lines` does.
   and moved `form-notes-line-count` to `Lines: 3`.
 - **The Notes `placeholder` is Android-only**, because the two platforms need
   opposite things from it. Removing it outright fixed iOS and broke Android.
-  - **iOS must not have one.** React Native appends a multiline field's
-    placeholder to its `accessibilityLabel` while the field is empty
-    (`RCTUITextView.mm`, `- (NSString *)accessibilityLabel`), so the label read
-    `Notes Press Enter here to add a new line` until something had been typed and
-    collapsed back to `Notes` afterwards — a command targeting `Notes` failed on
-    first use and only worked once the field had text. Single-line fields are
-    unaffected: `RCTUITextField` keeps `label` clean and exposes the placeholder
-    as `value` and `placeholderValue`.
-  - **Android must have one.** `placeholder` becomes the `EditText`'s `hint`
+  - **iOS is named *by* the placeholder**, and carries no `accessibilityLabel`.
+    `RCTUITextView` builds its label as `super.accessibilityLabel + " " +
+    placeholder` while the field is empty, so the two props cannot both be set:
+    `Notes` plus a descriptive placeholder produced
+    `Notes Press Enter here to add a new line`, and `Notes` plus `Notes` would
+    produce `Notes Notes`. Dropping the `accessibilityLabel` and naming the
+    placeholder `Notes` leaves the label exactly `Notes` while the field is
+    empty — the state a step resolves it in. **The cost:** once text is typed the
+    label goes empty, so a second command targeting `Notes` on iOS will not find
+    it. Single-line fields need none of this: `RCTUITextField` keeps `label`
+    clean and exposes the placeholder as `value` and `placeholderValue`.
+  - **Android is named by the `accessibilityLabel`** and still needs a
+    placeholder of its own. `placeholder` becomes the `EditText`'s `hint`
     (`ReactEditText.kt`, `setPlaceholder`). Without it, Notes was the only field
     on the screen whose node carried nothing but a `content-desc`, and
     `enter ... into "Notes"` stopped resolving — the text landed in whichever

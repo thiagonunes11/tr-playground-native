@@ -153,14 +153,20 @@ export default function FormInputsDemo() {
             */}
             <ThemedText className="text-base font-medium mb-2">Notes</ThemedText>
             {/*
-              The placeholder is Android-only, because the two platforms need opposite
-              things from it.
+              The placeholder is split by platform, because each one reaches the name
+              "Notes" by a different route.
 
-              iOS must not have one: React Native appends a multiline field's placeholder
-              to its accessibilityLabel while the field is empty (RCTUITextView.mm), so
-              the label read "Notes Press Enter here to add a new line" until text existed.
+              iOS is named BY the placeholder. RCTUITextView builds its accessibilityLabel
+              as `super.accessibilityLabel + " " + placeholder` while the field is empty,
+              so the two props cannot both be set — "Notes" plus a placeholder produced
+              "Notes Press Enter here to add a new line", and "Notes" plus "Notes" would
+              produce "Notes Notes". Dropping the accessibilityLabel and naming the
+              placeholder "Notes" leaves the label exactly "Notes" while the field is
+              empty, which is the state a step resolves it in. Once text is typed the
+              label goes empty, which is the known cost of this shape.
 
-              Android must have one: `placeholder` becomes the EditText's `hint`
+              Android is named by the accessibilityLabel and still needs a placeholder of
+              its own: `placeholder` becomes the EditText's `hint`
               (ReactEditText.kt), and without it this was the only field on the screen
               whose node carried nothing but a content-desc, which stopped `enter ... into
               "Notes"` from resolving. Measured with `uiautomator dump` — with the
@@ -177,10 +183,13 @@ export default function FormInputsDemo() {
             */}
             <TextInput
               testID="form-notes-input"
-              accessibilityLabel="Notes"
+              /* iOS takes its name from the placeholder instead — see the comment above */
+              accessibilityLabel={Platform.OS === 'android' ? 'Notes' : undefined}
               value={notes}
               onChangeText={setNotes}
-              placeholder={Platform.OS === 'android' ? 'Press Enter here to add a new line' : undefined}
+              placeholder={
+                Platform.OS === 'android' ? 'Press Enter here to add a new line' : 'Notes'
+              }
               placeholderTextColor="#666"
               multiline
               numberOfLines={4}
