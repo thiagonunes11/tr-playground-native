@@ -326,7 +326,7 @@ npm run start:dev
 | Camera Validation | `expo-camera` | Requires camera permission |
 | Audio Validation | `expo-audio` | Uses `useAudioPlayer` hooks |
 | Date Picker | `@react-native-community/datetimepicker` | Platform-native picker |
-| Form Inputs | `@react-native-picker/picker` | Renders `android.widget.Spinner` on Android; bundled in Expo Go |
+| Form Inputs | `@react-native-picker/picker` (Android only) | Renders `android.widget.Spinner`; bundled in Expo Go. iOS uses `ActionSheetIOS` from React Native core |
 | File Upload | `expo-document-picker` | Opens system file picker |
 | File Download | `expo-file-system` | Writes to device storage |
 | External Browser | — | Uses `Linking.openURL`; works in Expo Go |
@@ -631,6 +631,12 @@ If you see "Current location is unavailable", set a mock location in the emulato
 `app/demos/form-inputs.tsx` covers two testRigor commands on one screen: `enter`
 (keyboard Enter/Return key on native text fields) and `select` (native dropdown).
 
+Both commands resolve their target by accessibility label, so the screen is built
+around one rule: the label a test types must be the label the platform actually
+exposes. Two places broke that rule on iOS, which is why the dropdown is
+platform-branched and why the Notes field carries no placeholder — see the
+implementation notes below.
+
 ### Predictable content and testIDs
 
 | Element | `testID` | Expected value |
@@ -638,7 +644,7 @@ If you see "Current location is unavailable", set a mock location in the emulato
 | Full name field | `form-name-input` | — |
 | Email field | `form-email-input` | — |
 | Phone field | `form-phone-input` | — |
-| Notes field (multiline) | `form-notes-input` | — |
+| Notes field (multiline) | `form-notes-input` | Label is always exactly `Notes`, empty or filled |
 | Notes line counter | `form-notes-line-count` | `Lines: 1` before any newline |
 | Enter press counter | `form-enter-count` | `Enter pressed: 0` on load |
 | Last submitted field | `form-last-submitted-field` | `Last submitted field: none` on load |
@@ -654,12 +660,19 @@ enter "Ada Lovelace" into "Full Name"
 enter enter
 check that page contains "Last submitted field: Full Name"
 check that page contains "Enter pressed: 1"
+enter "First line" into "Notes"
+enter enter
+check that page contains "Lines: 2"
+check that page contains "Enter pressed: 1"
 select "Brazil" from "Country"
 check that page contains "Selected country: Brazil"
 enter "ada@testrigor.com" into "Email"
 tap "Register"
 check that page contains "Ada Lovelace from Brazil registered successfully!"
 ```
+
+The second `Enter pressed: 1` is the point of the Notes steps: Enter adds a line
+there instead of submitting, so the counter must not move while `Lines` does.
 
 ### Implementation notes
 
@@ -671,17 +684,48 @@ check that page contains "Ada Lovelace from Brazil registered successfully!"
   observable effect.
 - The Notes field is deliberately `multiline`, where Enter inserts a line break
   rather than submitting. `form-notes-line-count` makes that contrast assertable.
-- The dropdown uses `mode="dropdown"` so Android renders a real
-  `android.widget.Spinner`, which is what the `select` command resolves. On iOS
-  the same component renders an inline `UIPickerView` wheel instead: it is always
-  visible rather than opening on tap, and a selection is made by spinning it. A
-  test that taps to open a list will not work there — assert against
-  `form-selected-country` after the spin.
+- **The Notes field carries no `placeholder` on purpose.** React Native appends a
+  multiline field's placeholder to its `accessibilityLabel` while the field is
+  empty (`RCTUITextView.mm`, `- (NSString *)accessibilityLabel`), so on iOS the
+  label read `Notes Press Enter here to add a new line` until something had been
+  typed, and collapsed back to `Notes` afterwards. A command targeting `Notes`
+  therefore failed on first use and only started working once the field already
+  had text. The hint now lives in its own line below the field. Single-line
+  fields are unaffected: `RCTUITextField` keeps `label` clean and exposes the
+  placeholder as `value` and `placeholderValue` instead.
+- **The dropdown is branched by platform**, because no single component satisfies
+  `select` on both operating systems:
+  - **Android** keeps `@react-native-picker/picker` with `mode="dropdown"`, which
+    renders a real `android.widget.Spinner`. Its options reach the tree only once
+    the popup is inflated on tap, which is exactly what the command drives.
+  - **iOS** uses `ActionSheetIOS`. The same `Picker` renders a `UIPickerView`
+    there, and its option rows reach the accessibility tree only as `0x0` nodes
+    with no name — no element called `Brazil` exists to resolve, and the wheel has
+    no open or closed state, so a tap-then-pick command has nothing to act on. The
+    action sheet exposes every option as an `XCUIElementTypeButton` carrying its
+    own name, mirroring the Android popup.
+- Both branches keep the same `testID` and `accessibilityLabel`, so a single
+  `select "Brazil" from "Country"` step covers both platforms.
+- The iOS control sets `accessibilityValue`, so the closed field exposes its
+  current selection as `value` the way the Android Spinner exposes its selected
+  row. Without it the field only carried `label="Country"` and the selection was
+  readable solely from `form-selected-country`.
+- On iOS 26 the action sheet renders centred and **without a visible Cancel
+  button**, even though `cancelButtonIndex` is set. It is dismissed by tapping
+  outside, which leaves the selection unchanged. A test that needs a cancellable
+  row has to add one as a regular option.
 - The closed spinner sits on the app's own card, so its text and arrow colours
   come from the `Picker` `style` and `dropdownIconColor` props and follow the
   in-app theme toggle. The open popup is drawn with Android's theme, which
-  follows the OS instead, so `Picker.Item` deliberately sets no `color` — a
-  hardcoded one goes unreadable whenever the OS and the in-app toggle disagree.
+  follows the OS instead, so each `Picker.Item` sets a `backgroundColor` as well
+  as a `color` — colouring only the text leaves black on black whenever the OS and
+  the in-app toggle disagree.
+- The `UIPickerView` wheel is still a legitimate native control — automation
+  drives it through `adjust(toPickerWheelValue:)` rather than taps, and the RN
+  picker responds to that correctly. No screen exposes one any more: the date
+  picker demo uses `display="default"`, which is the compact iOS style, not a
+  wheel. Exercising a wheel again means either `display="spinner"` there or a
+  dedicated section here.
 
 ### Register in `constants/demos.ts`
 
