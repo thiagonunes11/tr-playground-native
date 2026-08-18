@@ -700,15 +700,35 @@ there instead of submitting, so the counter must not move while `Lines` does.
   their `accessibilityLabel`. Nothing about `multiline` was involved: pushing
   three `\n`-separated lines straight into the `XCUIElementTypeTextView` filled it
   and moved `form-notes-line-count` to `Lines: 3`.
-- **The Notes field carries no `placeholder` on purpose.** React Native appends a
-  multiline field's placeholder to its `accessibilityLabel` while the field is
-  empty (`RCTUITextView.mm`, `- (NSString *)accessibilityLabel`), so on iOS the
-  label read `Notes Press Enter here to add a new line` until something had been
-  typed, and collapsed back to `Notes` afterwards. A command targeting `Notes`
-  therefore failed on first use and only started working once the field already
-  had text. The hint now lives in its own line below the field. Single-line
-  fields are unaffected: `RCTUITextField` keeps `label` clean and exposes the
-  placeholder as `value` and `placeholderValue` instead.
+- **The Notes `placeholder` is Android-only**, because the two platforms need
+  opposite things from it. Removing it outright fixed iOS and broke Android.
+  - **iOS must not have one.** React Native appends a multiline field's
+    placeholder to its `accessibilityLabel` while the field is empty
+    (`RCTUITextView.mm`, `- (NSString *)accessibilityLabel`), so the label read
+    `Notes Press Enter here to add a new line` until something had been typed and
+    collapsed back to `Notes` afterwards — a command targeting `Notes` failed on
+    first use and only worked once the field had text. Single-line fields are
+    unaffected: `RCTUITextField` keeps `label` clean and exposes the placeholder
+    as `value` and `placeholderValue`.
+  - **Android must have one.** `placeholder` becomes the `EditText`'s `hint`
+    (`ReactEditText.kt`, `setPlaceholder`). Without it, Notes was the only field
+    on the screen whose node carried nothing but a `content-desc`, and
+    `enter ... into "Notes"` stopped resolving — the text landed in whichever
+    field held focus instead. Measured with `uiautomator dump`:
+    ```
+    TextView  text='Full Name'                       cd=''
+    EditText  text='Enter your full name'            cd='Full Name' hint='Enter your full name'
+    TextView  text='Notes'                           cd=''
+    EditText  text=''                                cd='Notes'     hint=''            ← broke
+    EditText  text='Press Enter here to add a new…'  cd='Notes'     hint='Press Ent…'  ← fixed
+    ```
+    With the placeholder back, the Notes node matches the three single-line
+    fields exactly. Note what this rules out: the duplication between the label
+    and the field is *not* the problem — `Full Name` is also both a `TextView`
+    text and an `EditText` `content-desc`, and those fields never failed.
+- The hint line below the field is rendered on both platforms even though Android
+  repeats it inside the field, so a `check that page contains` step reads the same
+  on either one.
 - The dropdown uses `mode="dropdown"` so Android renders a real
   `android.widget.Spinner`, which is what the `select` command resolves. On iOS
   the same component renders an inline `UIPickerView` wheel instead: it is always

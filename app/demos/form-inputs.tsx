@@ -1,7 +1,7 @@
 import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useRef, useState } from 'react';
-import { Pressable, ScrollView, TextInput, View } from 'react-native';
+import { Platform, Pressable, ScrollView, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -153,21 +153,44 @@ export default function FormInputsDemo() {
             */}
             <ThemedText className="text-base font-medium mb-2">Notes</ThemedText>
             {/*
-              No `placeholder` here on purpose. React Native appends a multiline field's
-              placeholder to its accessibilityLabel while the field is empty
-              (RCTUITextView.mm), so on iOS the label read "Notes Press Enter here to add
-              a new line" until text existed. The hint lives in its own line below.
+              The placeholder is Android-only, because the two platforms need opposite
+              things from it.
+
+              iOS must not have one: React Native appends a multiline field's placeholder
+              to its accessibilityLabel while the field is empty (RCTUITextView.mm), so
+              the label read "Notes Press Enter here to add a new line" until text existed.
+
+              Android must have one: `placeholder` becomes the EditText's `hint`
+              (ReactEditText.kt), and without it this was the only field on the screen
+              whose node carried nothing but a content-desc, which stopped `enter ... into
+              "Notes"` from resolving. Measured with `uiautomator dump` — with the
+              placeholder the node matches the three single-line fields exactly:
+
+                TextView  text='Full Name'            cd=''
+                EditText  text='Enter your full name' cd='Full Name' hint='Enter your full name'
+                TextView  text='Notes'                cd=''
+                EditText  text=''                     cd='Notes'     hint=''          <- broke
+                EditText  text='Press Enter here...'  cd='Notes'     hint='Press...'  <- fixed
+
+              The label duplication is not the problem: `Full Name` also appears as both a
+              TextView text and an EditText content-desc, and those fields never failed.
             */}
             <TextInput
               testID="form-notes-input"
               accessibilityLabel="Notes"
               value={notes}
               onChangeText={setNotes}
+              placeholder={Platform.OS === 'android' ? 'Press Enter here to add a new line' : undefined}
+              placeholderTextColor="#666"
               multiline
               numberOfLines={4}
               textAlignVertical="top"
               className={`${inputClassName} h-24`}
             />
+            {/*
+              Rendered on both platforms even though Android repeats it inside the field,
+              so a `check that page contains` step reads the same on either one.
+            */}
             <ThemedText className="text-sm text-gray-600 dark:text-gray-400 mt-2">
               Multiline: press Enter here to add a new line
             </ThemedText>
