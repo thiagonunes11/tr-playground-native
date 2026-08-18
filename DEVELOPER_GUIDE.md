@@ -326,7 +326,7 @@ npm run start:dev
 | Camera Validation | `expo-camera` | Requires camera permission |
 | Audio Validation | `expo-audio` | Uses `useAudioPlayer` hooks |
 | Date Picker | `@react-native-community/datetimepicker` | Platform-native picker |
-| Form Inputs | `@react-native-picker/picker` | Renders `android.widget.Spinner` on Android and a `UIPickerView` wheel on iOS; bundled in Expo Go |
+| Form Inputs | `@react-native-picker/picker` | Renders `android.widget.Spinner` on Android; bundled in Expo Go |
 | File Upload | `expo-document-picker` | Opens system file picker |
 | File Download | `expo-file-system` | Writes to device storage |
 | External Browser | — | Uses `Linking.openURL`; works in Expo Go |
@@ -631,13 +631,6 @@ If you see "Current location is unavailable", set a mock location in the emulato
 `app/demos/form-inputs.tsx` covers two testRigor commands on one screen: `enter`
 (keyboard Enter/Return key on native text fields) and `select` (native dropdown).
 
-Both commands resolve their target by accessibility label, so the screen is built
-around one rule: the label a test types must be the label the platform actually
-exposes. A test author types what they read on screen, so every visible label here
-is written to be character-for-character the field's `accessibilityLabel`. Two
-things about the Notes field follow from that rule — it carries no placeholder,
-and its on-screen label reads plain `Notes`. See the implementation notes below.
-
 ### Predictable content and testIDs
 
 | Element | `testID` | Expected value |
@@ -645,7 +638,7 @@ and its on-screen label reads plain `Notes`. See the implementation notes below.
 | Full name field | `form-name-input` | — |
 | Email field | `form-email-input` | — |
 | Phone field | `form-phone-input` | — |
-| Notes field (multiline) | `form-notes-input` | On-screen label and `accessibilityLabel` are both exactly `Notes`, empty or filled |
+| Notes field (multiline) | `form-notes-input` | — |
 | Notes line counter | `form-notes-line-count` | `Lines: 1` before any newline |
 | Enter press counter | `form-enter-count` | `Enter pressed: 0` on load |
 | Last submitted field | `form-last-submitted-field` | `Last submitted field: none` on load |
@@ -661,19 +654,12 @@ enter "Ada Lovelace" into "Full Name"
 enter enter
 check that page contains "Last submitted field: Full Name"
 check that page contains "Enter pressed: 1"
-enter "First line" into "Notes"
-enter enter
-check that page contains "Lines: 2"
-check that page contains "Enter pressed: 1"
 select "Brazil" from "Country"
 check that page contains "Selected country: Brazil"
 enter "ada@testrigor.com" into "Email"
 tap "Register"
 check that page contains "Ada Lovelace from Brazil registered successfully!"
 ```
-
-The second `Enter pressed: 1` is the point of the Notes steps: Enter adds a line
-there instead of submitting, so the counter must not move while `Lines` does.
 
 ### Implementation notes
 
@@ -685,67 +671,17 @@ there instead of submitting, so the counter must not move while `Lines` does.
   observable effect.
 - The Notes field is deliberately `multiline`, where Enter inserts a line break
   rather than submitting. `form-notes-line-count` makes that contrast assertable.
-- **The label above the Notes field reads plain `Notes`, not `Notes (multiline)`.**
-  The word "multiline" lives in the hint line below the field instead. While the
-  label said `Notes (multiline)`, that string named only the label itself, never
-  the field, so `enter ... into "Notes (multiline)"` had no editable element to
-  resolve — measured on iOS with Appium/XCUITest:
-  ```
-  label "Full Name"          → StaticText   (the on-screen label)
-                             → TextField    ← the input answers to it too
-  label "Notes (multiline)"  → StaticText   (the on-screen label)
-                             → nothing else; the input was named "Notes"
-  ```
-  The single-line fields worked only because their label text happened to equal
-  their `accessibilityLabel`. Nothing about `multiline` was involved: pushing
-  three `\n`-separated lines straight into the `XCUIElementTypeTextView` filled it
-  and moved `form-notes-line-count` to `Lines: 3`.
-- **The Notes field carries no `placeholder` on purpose.** React Native appends a
-  multiline field's placeholder to its `accessibilityLabel` while the field is
-  empty (`RCTUITextView.mm`, `- (NSString *)accessibilityLabel`), so on iOS the
-  label read `Notes Press Enter here to add a new line` until something had been
-  typed, and collapsed back to `Notes` afterwards. A command targeting `Notes`
-  therefore failed on first use and only started working once the field already
-  had text. The hint now lives in its own line below the field. Single-line
-  fields are unaffected: `RCTUITextField` keeps `label` clean and exposes the
-  placeholder as `value` and `placeholderValue` instead.
 - The dropdown uses `mode="dropdown"` so Android renders a real
-  `android.widget.Spinner`, which is what the `select` command resolves. The same
-  component renders a `UIPickerView` wheel on iOS. **Both are the correct target
-  for `select` on their platform, and the component is deliberately not branched
-  by platform** — every alternative iOS control (action sheet, `UIMenu`, custom
-  dropdown) is driven by tapping an option, which turns the scenario into a click
-  flow and stops exercising `select` at all. On iOS the wheel is the only native
-  control with set-a-value semantics, so it is the only honest target here.
-- What the wheel exposes on iOS, measured on the release build:
-  ```
-  XCUIElementTypeOther  name="form-country-picker"  label="Country"
-  └── XCUIElementTypePicker
-      └── XCUIElementTypePickerWheel  value="Select a country"  traits="Adjustable"
-          └── 6 × XCUIElementTypeOther   0x0, no name, accessible="false"
-  ```
-  The option rows never carry a name, so no element called `Brazil` exists to
-  locate, and the wheel has no open or closed state. Automation drives it by
-  setting a value — `adjust(toPickerWheelValue:)` in XCUITest, which Appium exposes
-  as `setValue` on the wheel. That path works against this build and updates React
-  state correctly; a driver that only taps cannot select anything here.
-- A swipe gesture that passes over the wheel spins it instead of scrolling the
-  `ScrollView`, so a test that scrolls the page can change the selection as a side
-  effect. Assert against `form-selected-country`, never against the visible option
-  labels — with the wheel permanently open, neighbouring option names are on screen
-  even when nothing is selected, so a `page contains "Brazil"` check passes
-  vacuously.
+  `android.widget.Spinner`, which is what the `select` command resolves. On iOS
+  the same component renders an inline `UIPickerView` wheel instead: it is always
+  visible rather than opening on tap, and a selection is made by spinning it. A
+  test that taps to open a list will not work there — assert against
+  `form-selected-country` after the spin.
 - The closed spinner sits on the app's own card, so its text and arrow colours
   come from the `Picker` `style` and `dropdownIconColor` props and follow the
   in-app theme toggle. The open popup is drawn with Android's theme, which
-  follows the OS instead, so each `Picker.Item` sets a `backgroundColor` as well
-  as a `color` — colouring only the text leaves black on black whenever the OS and
-  the in-app toggle disagree.
-- Do not "fix" a failing iOS `select` by rewriting this screen around clicks. The
-  app side is verified: the wheel is a real native control, it is reachable, and it
-  responds to the value-setting path. If `select` fails on iOS, that belongs in a
-  tool-side ticket, not in a workaround that quietly stops testing the command the
-  demo exists to cover.
+  follows the OS instead, so `Picker.Item` deliberately sets no `color` — a
+  hardcoded one goes unreadable whenever the OS and the in-app toggle disagree.
 
 ### Register in `constants/demos.ts`
 

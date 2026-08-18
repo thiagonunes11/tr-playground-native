@@ -144,34 +144,20 @@ export default function FormInputsDemo() {
 
           {/* Multiline field: Enter inserts a line break instead of submitting */}
           <View className="mb-4">
-            {/*
-              Reads exactly "Notes", the same string the field exposes as its
-              accessibilityLabel. A test author targets what they see on screen, and
-              "Notes (multiline)" named only this label — the field itself was never
-              called that, so `enter ... into "Notes (multiline)"` had nothing editable
-              to resolve. The multiline part of the story is stated in the hint below.
-            */}
-            <ThemedText className="text-base font-medium mb-2">Notes</ThemedText>
-            {/*
-              No `placeholder` here on purpose. React Native appends a multiline field's
-              placeholder to its accessibilityLabel while the field is empty
-              (RCTUITextView.mm), so on iOS the label read "Notes Press Enter here to add
-              a new line" until text existed. The hint lives in its own line below.
-            */}
+            <ThemedText className="text-base font-medium mb-2">Notes (multiline)</ThemedText>
             <TextInput
               testID="form-notes-input"
               accessibilityLabel="Notes"
               value={notes}
               onChangeText={setNotes}
+              placeholder="Press Enter here to add a new line"
+              placeholderTextColor="#666"
               multiline
               numberOfLines={4}
               textAlignVertical="top"
               className={`${inputClassName} h-24`}
             />
-            <ThemedText className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-              Multiline: press Enter here to add a new line
-            </ThemedText>
-            <ThemedText testID="form-notes-line-count" className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <ThemedText testID="form-notes-line-count" className="text-sm text-gray-600 dark:text-gray-400 mt-2">
               Lines: {notes.split('\n').length}
             </ThemedText>
           </View>
