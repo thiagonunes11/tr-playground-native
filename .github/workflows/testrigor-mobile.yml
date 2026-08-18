@@ -4,6 +4,11 @@ name: testRigor Mobile
 # matching testRigor suite: the APK goes to the Android suite, the simulator
 # .app.zip goes to the iOS suite.
 #
+# Each artifact is named after the `expo.version` in app.json, matching the
+# GitHub release assets — tr-playground-mobile-<version>.apk and
+# tr-playground-mobile-<version>-ios-simulator.app.zip — so the build under test
+# is identifiable from the file name alone in the testRigor run.
+#
 # Required repository secrets:
 #   EXPO_TOKEN                - Expo access token (expo.dev > Account > Access tokens)
 #   TESTRIGOR_API_KEY         - testRigor personal auth token (avoids the interactive prompt)
@@ -55,6 +60,15 @@ jobs:
       - name: Install EAS and testRigor CLIs
         run: npm install -g eas-cli @testrigor/testrigor-cli
 
+      # Mirrors the GitHub release asset naming, from the same app.json version
+      # that testrigor-vars.js publishes as `appVersion` — so the file testRigor
+      # receives and the version a test case asserts can never disagree.
+      - name: Resolve the artifact name
+        run: |
+          version=$(jq -er '.expo.version' app.json)
+          echo "TR_ARTIFACT=tr-playground-mobile-$version.apk" >> "$GITHUB_ENV"
+          echo "Artifact: tr-playground-mobile-$version.apk"
+
       - name: Build the APK on EAS
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
@@ -63,8 +77,8 @@ jobs:
             --non-interactive --wait --json > build.json
           url=$(jq -r '.[0].artifacts.applicationArchiveUrl // .[0].artifacts.buildUrl' build.json)
           echo "Downloading $url"
-          curl -fL "$url" -o app.apk
-          ls -lh app.apk
+          curl -fL "$url" -o "$TR_ARTIFACT"
+          ls -lh "$TR_ARTIFACT"
 
       - name: Generate the version test data
         env:
@@ -77,7 +91,7 @@ jobs:
         run: |
           testrigor test-suite run "$TR_ANDROID_SUITE_ID" \
             --token "${{ secrets.TR_ANDROID_SUITE_TOKEN }}" \
-            --file-path app.apk \
+            --file-path "$TR_ARTIFACT" \
             --variables-path testrigor-vars.json \
             ${TR_LABELS:+--labels "$TR_LABELS"} \
             --junit-report-save-path testrigor-android.xml
@@ -106,6 +120,14 @@ jobs:
       - name: Install EAS and testRigor CLIs
         run: npm install -g eas-cli @testrigor/testrigor-cli
 
+      # Same rule as the Android job: the release asset naming, from app.json.
+      # The `.app.zip` suffix is not cosmetic — testRigor validates the extension.
+      - name: Resolve the artifact name
+        run: |
+          version=$(jq -er '.expo.version' app.json)
+          echo "TR_ARTIFACT=tr-playground-mobile-$version-ios-simulator.app.zip" >> "$GITHUB_ENV"
+          echo "Artifact: tr-playground-mobile-$version-ios-simulator.app.zip"
+
       - name: Build the simulator app on EAS
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
@@ -125,10 +147,9 @@ jobs:
             echo "No .app bundle found in the EAS artifact"
             exit 1
           fi
-          # testRigor validates the extension, so the name must end in .app.zip.
           # -y keeps the symlinks inside the bundle; without it the app fails to launch.
-          (cd "$(dirname "$app")" && zip -qry -X "$GITHUB_WORKSPACE/trplayground.app.zip" "$(basename "$app")")
-          ls -lh trplayground.app.zip
+          (cd "$(dirname "$app")" && zip -qry -X "$GITHUB_WORKSPACE/$TR_ARTIFACT" "$(basename "$app")")
+          ls -lh "$TR_ARTIFACT"
 
       - name: Generate the version test data
         env:
@@ -141,7 +162,7 @@ jobs:
         run: |
           testrigor test-suite run "$TR_IOS_SUITE_ID" \
             --token "${{ secrets.TR_IOS_SUITE_TOKEN }}" \
-            --file-path trplayground.app.zip \
+            --file-path "$TR_ARTIFACT" \
             --variables-path testrigor-vars.json \
             ${TR_LABELS:+--labels "$TR_LABELS"} \
             --junit-report-save-path testrigor-ios.xml
