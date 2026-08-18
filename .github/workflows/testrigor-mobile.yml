@@ -1,0 +1,176 @@
+name: testRigor Mobile
+
+# Builds the app on EAS for each new version and routes each artifact to the
+# matching testRigor suite: the APK goes to the Android suite, the simulator
+# .app.zip goes to the iOS suite.
+#
+# Each artifact is named after the `expo.version` in app.json, matching the
+# GitHub release assets — tr-playground-mobile-<version>.apk and
+# tr-playground-mobile-<version>-ios-simulator.app.zip — so the build under test
+# is identifiable from the file name alone in the testRigor run.
+#
+# Required repository secrets:
+#   EXPO_TOKEN                - Expo access token (expo.dev > Account > Access tokens)
+#   TESTRIGOR_API_KEY         - testRigor personal auth token (avoids the interactive prompt)
+#   TR_ANDROID_SUITE_TOKEN    - CI token of the Android suite (suite > CI/CD Integration)
+#   TR_IOS_SUITE_TOKEN        - CI token of the iOS suite (suite > CI/CD Integration)
+#
+# The target suites are set below. Override them with the repository variables
+# TR_ANDROID_SUITE_ID / TR_IOS_SUITE_ID to point a fork or a branch elsewhere.
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+    # Docs-only commits do not change the app, so they skip the build.
+    paths-ignore:
+      - "**/*.md"
+      - ".vscode/**"
+  workflow_dispatch:
+    inputs:
+      labels:
+        description: "testRigor labels to run (empty = whole suite)"
+        required: false
+        default: ""
+
+env:
+  # https://app.testrigor.com/test-suites/LYyRBuv9ZhHhANPnZ/test-cases
+  TR_ANDROID_SUITE_ID: ${{ vars.TR_ANDROID_SUITE_ID || 'LYyRBuv9ZhHhANPnZ' }}
+  # https://app.testrigor.com/test-suites/o69JjqqA6vmP3Ndpj/test-cases
+  TR_IOS_SUITE_ID: ${{ vars.TR_IOS_SUITE_ID || 'o69JjqqA6vmP3Ndpj' }}
+  # Runs the whole suite by default. Pass labels on the manual trigger to narrow it.
+  TR_LABELS: ${{ github.event.inputs.labels || '' }}
+
+jobs:
+  android:
+    name: Android suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install EAS and testRigor CLIs
+        run: npm install -g eas-cli @testrigor/testrigor-cli
+
+      # Mirrors the GitHub release asset naming, from the same app.json version
+      # that testrigor-vars.js publishes as `appVersion` — so the file testRigor
+      # receives and the version a test case asserts can never disagree.
+      - name: Resolve the artifact name
+        run: |
+          version=$(jq -er '.expo.version' app.json)
+          echo "TR_ARTIFACT=tr-playground-mobile-$version.apk" >> "$GITHUB_ENV"
+          echo "Artifact: tr-playground-mobile-$version.apk"
+
+      - name: Build the APK on EAS
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          eas build --platform android --profile preview \
+            --non-interactive --wait --json > build.json
+          url=$(jq -r '.[0].artifacts.applicationArchiveUrl // .[0].artifacts.buildUrl' build.json)
+          echo "Downloading $url"
+          curl -fL "$url" -o "$TR_ARTIFACT"
+          ls -lh "$TR_ARTIFACT"
+
+      - name: Generate the version test data
+        env:
+          TR_PLATFORM: android
+        run: node scripts/testrigor-vars.js testrigor-vars.json
+
+      - name: Run the testRigor Android suite
+        env:
+          TESTRIGOR_API_KEY: ${{ secrets.TESTRIGOR_API_KEY }}
+        run: |
+          testrigor test-suite run "$TR_ANDROID_SUITE_ID" \
+            --token "${{ secrets.TR_ANDROID_SUITE_TOKEN }}" \
+            --file-path "$TR_ARTIFACT" \
+            --variables-path testrigor-vars.json \
+            ${TR_LABELS:+--labels "$TR_LABELS"} \
+            --junit-report-save-path testrigor-android.xml
+
+      - name: Upload the JUnit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: testrigor-android
+          path: testrigor-android.xml
+          if-no-files-found: warn
+
+  ios:
+    name: iOS suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install EAS and testRigor CLIs
+        run: npm install -g eas-cli @testrigor/testrigor-cli
+
+      # Same rule as the Android job: the release asset naming, from app.json.
+      # The `.app.zip` suffix is not cosmetic — testRigor validates the extension.
+      - name: Resolve the artifact name
+        run: |
+          version=$(jq -er '.expo.version' app.json)
+          echo "TR_ARTIFACT=tr-playground-mobile-$version-ios-simulator.app.zip" >> "$GITHUB_ENV"
+          echo "Artifact: tr-playground-mobile-$version-ios-simulator.app.zip"
+
+      - name: Build the simulator app on EAS
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          eas build --platform ios --profile preview \
+            --non-interactive --wait --json > build.json
+          url=$(jq -r '.[0].artifacts.applicationArchiveUrl // .[0].artifacts.buildUrl' build.json)
+          echo "Downloading $url"
+          curl -fL "$url" -o sim-build.tar.gz
+
+      - name: Repackage the .app bundle as .app.zip
+        run: |
+          mkdir extracted
+          tar -xzf sim-build.tar.gz -C extracted
+          app=$(find extracted -maxdepth 2 -name "*.app" | head -1)
+          if [ -z "$app" ]; then
+            echo "No .app bundle found in the EAS artifact"
+            exit 1
+          fi
+          # -y keeps the symlinks inside the bundle; without it the app fails to launch.
+          (cd "$(dirname "$app")" && zip -qry -X "$GITHUB_WORKSPACE/$TR_ARTIFACT" "$(basename "$app")")
+          ls -lh "$TR_ARTIFACT"
+
+      - name: Generate the version test data
+        env:
+          TR_PLATFORM: ios
+        run: node scripts/testrigor-vars.js testrigor-vars.json
+
+      - name: Run the testRigor iOS suite
+        env:
+          TESTRIGOR_API_KEY: ${{ secrets.TESTRIGOR_API_KEY }}
+        run: |
+          testrigor test-suite run "$TR_IOS_SUITE_ID" \
+            --token "${{ secrets.TR_IOS_SUITE_TOKEN }}" \
+            --file-path "$TR_ARTIFACT" \
+            --variables-path testrigor-vars.json \
+            ${TR_LABELS:+--labels "$TR_LABELS"} \
+            --junit-report-save-path testrigor-ios.xml
+
+      - name: Upload the JUnit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: testrigor-ios
+          path: testrigor-ios.xml
+          if-no-files-found: warn

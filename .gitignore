@@ -19,6 +19,11 @@ expo-env.d.ts
 *.ipa
 *.app.zip
 
+# testRigor CI artifacts
+testrigor-vars.json
+testrigor-*.xml
+sim-build.tar.gz
+
 # Native caches
 .kotlin/
 *.orig.*
