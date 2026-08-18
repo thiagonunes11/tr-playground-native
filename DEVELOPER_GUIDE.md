@@ -631,6 +631,13 @@ If you see "Current location is unavailable", set a mock location in the emulato
 `app/demos/form-inputs.tsx` covers two testRigor commands on one screen: `enter`
 (keyboard Enter/Return key on native text fields) and `select` (native dropdown).
 
+Both commands resolve their target by accessibility label, so the screen is built
+around one rule: the label a test types must be the label the platform actually
+exposes. A test author types what they read on screen, so every visible label here
+is written to be character-for-character the field's `accessibilityLabel`. Two
+things about the Notes field follow from that rule — it carries no placeholder,
+and its on-screen label reads plain `Notes`. See the implementation notes below.
+
 ### Predictable content and testIDs
 
 | Element | `testID` | Expected value |
@@ -638,7 +645,7 @@ If you see "Current location is unavailable", set a mock location in the emulato
 | Full name field | `form-name-input` | — |
 | Email field | `form-email-input` | — |
 | Phone field | `form-phone-input` | — |
-| Notes field (multiline) | `form-notes-input` | — |
+| Notes field (multiline) | `form-notes-input` | On-screen label and `accessibilityLabel` are both exactly `Notes`, empty or filled |
 | Notes line counter | `form-notes-line-count` | `Lines: 1` before any newline |
 | Enter press counter | `form-enter-count` | `Enter pressed: 0` on load |
 | Last submitted field | `form-last-submitted-field` | `Last submitted field: none` on load |
@@ -654,12 +661,19 @@ enter "Ada Lovelace" into "Full Name"
 enter enter
 check that page contains "Last submitted field: Full Name"
 check that page contains "Enter pressed: 1"
+enter "First line" into "Notes"
+enter enter
+check that page contains "Lines: 2"
+check that page contains "Enter pressed: 1"
 select "Brazil" from "Country"
 check that page contains "Selected country: Brazil"
 enter "ada@testrigor.com" into "Email"
 tap "Register"
 check that page contains "Ada Lovelace from Brazil registered successfully!"
 ```
+
+The second `Enter pressed: 1` is the point of the Notes steps: Enter adds a line
+there instead of submitting, so the counter must not move while `Lines` does.
 
 ### Implementation notes
 
@@ -671,6 +685,30 @@ check that page contains "Ada Lovelace from Brazil registered successfully!"
   observable effect.
 - The Notes field is deliberately `multiline`, where Enter inserts a line break
   rather than submitting. `form-notes-line-count` makes that contrast assertable.
+- **The label above the Notes field reads plain `Notes`, not `Notes (multiline)`.**
+  The word "multiline" lives in the hint line below the field instead. While the
+  label said `Notes (multiline)`, that string named only the label itself, never
+  the field, so `enter ... into "Notes (multiline)"` had no editable element to
+  resolve — measured on iOS with Appium/XCUITest:
+  ```
+  label "Full Name"          → StaticText   (the on-screen label)
+                             → TextField    ← the input answers to it too
+  label "Notes (multiline)"  → StaticText   (the on-screen label)
+                             → nothing else; the input was named "Notes"
+  ```
+  The single-line fields worked only because their label text happened to equal
+  their `accessibilityLabel`. Nothing about `multiline` was involved: pushing
+  three `\n`-separated lines straight into the `XCUIElementTypeTextView` filled it
+  and moved `form-notes-line-count` to `Lines: 3`.
+- **The Notes field carries no `placeholder` on purpose.** React Native appends a
+  multiline field's placeholder to its `accessibilityLabel` while the field is
+  empty (`RCTUITextView.mm`, `- (NSString *)accessibilityLabel`), so on iOS the
+  label read `Notes Press Enter here to add a new line` until something had been
+  typed, and collapsed back to `Notes` afterwards. A command targeting `Notes`
+  therefore failed on first use and only started working once the field already
+  had text. The hint now lives in its own line below the field. Single-line
+  fields are unaffected: `RCTUITextField` keeps `label` clean and exposes the
+  placeholder as `value` and `placeholderValue` instead.
 - The dropdown uses `mode="dropdown"` so Android renders a real
   `android.widget.Spinner`, which is what the `select` command resolves. On iOS
   the same component renders an inline `UIPickerView` wheel instead: it is always
