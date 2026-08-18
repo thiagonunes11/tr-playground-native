@@ -144,7 +144,14 @@ export default function FormInputsDemo() {
 
           {/* Multiline field: Enter inserts a line break instead of submitting */}
           <View className="mb-4">
-            <ThemedText className="text-base font-medium mb-2">Notes (multiline)</ThemedText>
+            {/*
+              Reads exactly "Notes", the same string the field exposes as its
+              accessibilityLabel. A test author targets what they see on screen, and
+              "Notes (multiline)" named only this label — the field itself was never
+              called that, so `enter ... into "Notes (multiline)"` had nothing editable
+              to resolve. The multiline part of the story is stated in the hint below.
+            */}
+            <ThemedText className="text-base font-medium mb-2">Notes</ThemedText>
             {/*
               No `placeholder` here on purpose. React Native appends a multiline field's
               placeholder to its accessibilityLabel while the field is empty
@@ -162,7 +169,7 @@ export default function FormInputsDemo() {
               className={`${inputClassName} h-24`}
             />
             <ThemedText className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-              Press Enter here to add a new line
+              Multiline: press Enter here to add a new line
             </ThemedText>
             <ThemedText testID="form-notes-line-count" className="text-sm text-gray-600 dark:text-gray-400 mt-1">
               Lines: {notes.split('\n').length}
