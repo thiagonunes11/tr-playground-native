@@ -2,7 +2,7 @@
   "expo": {
     "name": "testRigor Playground",
     "slug": "tr-playground",
-    "version": "0.7.2",
+    "version": "0.7.3",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
     "scheme": "trplayground",
