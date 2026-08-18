@@ -326,7 +326,7 @@ npm run start:dev
 | Camera Validation | `expo-camera` | Requires camera permission |
 | Audio Validation | `expo-audio` | Uses `useAudioPlayer` hooks |
 | Date Picker | `@react-native-community/datetimepicker` | Platform-native picker |
-| Form Inputs | `@react-native-picker/picker` (Android only) | Renders `android.widget.Spinner`; bundled in Expo Go. iOS uses `ActionSheetIOS` from React Native core |
+| Form Inputs | `@react-native-picker/picker` | Renders `android.widget.Spinner` on Android and a `UIPickerView` wheel on iOS; bundled in Expo Go |
 | File Upload | `expo-document-picker` | Opens system file picker |
 | File Download | `expo-file-system` | Writes to device storage |
 | External Browser | — | Uses `Linking.openURL`; works in Expo Go |
@@ -633,8 +633,7 @@ If you see "Current location is unavailable", set a mock location in the emulato
 
 Both commands resolve their target by accessibility label, so the screen is built
 around one rule: the label a test types must be the label the platform actually
-exposes. Two places broke that rule on iOS, which is why the dropdown is
-platform-branched and why the Notes field carries no placeholder — see the
+exposes. The Notes field carries no placeholder for exactly that reason — see the
 implementation notes below.
 
 ### Predictable content and testIDs
@@ -693,39 +692,43 @@ there instead of submitting, so the counter must not move while `Lines` does.
   had text. The hint now lives in its own line below the field. Single-line
   fields are unaffected: `RCTUITextField` keeps `label` clean and exposes the
   placeholder as `value` and `placeholderValue` instead.
-- **The dropdown is branched by platform**, because no single component satisfies
-  `select` on both operating systems:
-  - **Android** keeps `@react-native-picker/picker` with `mode="dropdown"`, which
-    renders a real `android.widget.Spinner`. Its options reach the tree only once
-    the popup is inflated on tap, which is exactly what the command drives.
-  - **iOS** uses `ActionSheetIOS`. The same `Picker` renders a `UIPickerView`
-    there, and its option rows reach the accessibility tree only as `0x0` nodes
-    with no name — no element called `Brazil` exists to resolve, and the wheel has
-    no open or closed state, so a tap-then-pick command has nothing to act on. The
-    action sheet exposes every option as an `XCUIElementTypeButton` carrying its
-    own name, mirroring the Android popup.
-- Both branches keep the same `testID` and `accessibilityLabel`, so a single
-  `select "Brazil" from "Country"` step covers both platforms.
-- The iOS control sets `accessibilityValue`, so the closed field exposes its
-  current selection as `value` the way the Android Spinner exposes its selected
-  row. Without it the field only carried `label="Country"` and the selection was
-  readable solely from `form-selected-country`.
-- On iOS 26 the action sheet renders centred and **without a visible Cancel
-  button**, even though `cancelButtonIndex` is set. It is dismissed by tapping
-  outside, which leaves the selection unchanged. A test that needs a cancellable
-  row has to add one as a regular option.
+- The dropdown uses `mode="dropdown"` so Android renders a real
+  `android.widget.Spinner`, which is what the `select` command resolves. The same
+  component renders a `UIPickerView` wheel on iOS. **Both are the correct target
+  for `select` on their platform, and the component is deliberately not branched
+  by platform** — every alternative iOS control (action sheet, `UIMenu`, custom
+  dropdown) is driven by tapping an option, which turns the scenario into a click
+  flow and stops exercising `select` at all. On iOS the wheel is the only native
+  control with set-a-value semantics, so it is the only honest target here.
+- What the wheel exposes on iOS, measured on the release build:
+  ```
+  XCUIElementTypeOther  name="form-country-picker"  label="Country"
+  └── XCUIElementTypePicker
+      └── XCUIElementTypePickerWheel  value="Select a country"  traits="Adjustable"
+          └── 6 × XCUIElementTypeOther   0x0, no name, accessible="false"
+  ```
+  The option rows never carry a name, so no element called `Brazil` exists to
+  locate, and the wheel has no open or closed state. Automation drives it by
+  setting a value — `adjust(toPickerWheelValue:)` in XCUITest, which Appium exposes
+  as `setValue` on the wheel. That path works against this build and updates React
+  state correctly; a driver that only taps cannot select anything here.
+- A swipe gesture that passes over the wheel spins it instead of scrolling the
+  `ScrollView`, so a test that scrolls the page can change the selection as a side
+  effect. Assert against `form-selected-country`, never against the visible option
+  labels — with the wheel permanently open, neighbouring option names are on screen
+  even when nothing is selected, so a `page contains "Brazil"` check passes
+  vacuously.
 - The closed spinner sits on the app's own card, so its text and arrow colours
   come from the `Picker` `style` and `dropdownIconColor` props and follow the
   in-app theme toggle. The open popup is drawn with Android's theme, which
   follows the OS instead, so each `Picker.Item` sets a `backgroundColor` as well
   as a `color` — colouring only the text leaves black on black whenever the OS and
   the in-app toggle disagree.
-- The `UIPickerView` wheel is still a legitimate native control — automation
-  drives it through `adjust(toPickerWheelValue:)` rather than taps, and the RN
-  picker responds to that correctly. No screen exposes one any more: the date
-  picker demo uses `display="default"`, which is the compact iOS style, not a
-  wheel. Exercising a wheel again means either `display="spinner"` there or a
-  dedicated section here.
+- Do not "fix" a failing iOS `select` by rewriting this screen around clicks. The
+  app side is verified: the wheel is a real native control, it is reachable, and it
+  responds to the value-setting path. If `select` fails on iOS, that belongs in a
+  tool-side ticket, not in a workaround that quietly stops testing the command the
+  demo exists to cover.
 
 ### Register in `constants/demos.ts`
 

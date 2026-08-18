@@ -1,7 +1,7 @@
 import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useRef, useState } from 'react';
-import { ActionSheetIOS, Platform, Pressable, ScrollView, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -15,9 +15,6 @@ const COUNTRIES = [
   { value: 'india', label: 'India' },
   { value: 'united-states', label: 'United States' },
 ] as const;
-
-/** The placeholder row is not offered as a choice in the iOS action sheet */
-const SELECTABLE_COUNTRIES = COUNTRIES.filter((option) => option.value);
 
 const inputClassName =
   'border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-3 text-black dark:text-white bg-white dark:bg-gray-800';
@@ -50,28 +47,6 @@ export default function FormInputsDemo() {
   const selectedCountryLabel = country
     ? (COUNTRIES.find((option) => option.value === country)?.label ?? '')
     : '';
-
-  /**
-   * iOS renders the Picker as an always-visible UIPickerView wheel whose option rows
-   * never reach the accessibility tree — there is no element named "Brazil" to resolve,
-   * so a `select` command has nothing to act on. An action sheet puts every option in
-   * the tree as a real UIKit button, matching how the Android Spinner popup behaves.
-   */
-  const openCountrySheet = () => {
-    const options = SELECTABLE_COUNTRIES.map((option) => option.label);
-
-    ActionSheetIOS.showActionSheetWithOptions(
-      {
-        title: 'Country',
-        options: [...options, 'Cancel'],
-        cancelButtonIndex: options.length,
-        userInterfaceStyle: isDark ? 'dark' : 'light',
-      },
-      (index) => {
-        if (index < options.length) setCountry(SELECTABLE_COUNTRIES[index].value);
-      }
-    );
-  };
 
   const handleSubmit = () => {
     const missing: string[] = [];
@@ -173,8 +148,8 @@ export default function FormInputsDemo() {
             {/*
               No `placeholder` here on purpose. React Native appends a multiline field's
               placeholder to its accessibilityLabel while the field is empty
-              (RCTUITextView.mm), so "Notes" only becomes resolvable by label after text
-              is already typed. The hint lives in its own line below instead.
+              (RCTUITextView.mm), so on iOS the label read "Notes Press Enter here to add
+              a new line" until text existed. The hint lives in its own line below.
             */}
             <TextInput
               testID="form-notes-input"
@@ -209,59 +184,39 @@ export default function FormInputsDemo() {
           <ThemedText className="text-lg font-semibold mb-4">Dropdown</ThemedText>
 
           <ThemedText className="text-base font-medium mb-2">Country</ThemedText>
-
-          {/* Same testID and accessibilityLabel on both platforms, so one test step covers both */}
-          {Platform.OS === 'ios' ? (
-            <Pressable
+          <View className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden mb-4">
+            <Picker
               testID="form-country-picker"
               accessibilityLabel="Country"
-              accessibilityRole="button"
-              /* Puts the closed field's current selection in the tree as `value`, the way
-                 the Android Spinner exposes its selected row */
-              accessibilityValue={{ text: selectedCountryLabel || 'Select a country' }}
-              onPress={openCountrySheet}
-              className="flex-row items-center justify-between border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-3 mb-4 bg-white dark:bg-gray-800"
+              selectedValue={country}
+              onValueChange={(value) => setCountry(String(value))}
+              /* Renders an android.widget.Spinner instead of the iOS-style wheel */
+              mode="dropdown"
+              dropdownIconColor={isDark ? '#FFFFFF' : '#000000'}
+              style={{
+                color: isDark ? '#FFFFFF' : '#000000',
+                backgroundColor: isDark ? '#1F2937' : '#FFFFFF',
+              }}
             >
-              <ThemedText className="text-base">
-                {selectedCountryLabel || 'Select a country'}
-              </ThemedText>
-              <Ionicons name="chevron-down" size={18} color={isDark ? '#FFFFFF' : '#000000'} />
-            </Pressable>
-          ) : (
-            <View className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden mb-4">
-              <Picker
-                testID="form-country-picker"
-                accessibilityLabel="Country"
-                selectedValue={country}
-                onValueChange={(value) => setCountry(String(value))}
-                /* Renders an android.widget.Spinner instead of the iOS-style wheel */
-                mode="dropdown"
-                dropdownIconColor={isDark ? '#FFFFFF' : '#000000'}
-                style={{
-                  color: isDark ? '#FFFFFF' : '#000000',
-                  backgroundColor: isDark ? '#1F2937' : '#FFFFFF',
-                }}
-              >
-                {/*
-                  The open popup is drawn with Android's own theme, which follows the
-                  OS instead of the in-app toggle, so each row sets its background as
-                  well as its text colour — colouring only the text leaves black on
-                  black whenever the two disagree.
-                */}
-                {COUNTRIES.map((option) => (
-                  <Picker.Item
-                    key={option.value || 'placeholder'}
-                    label={option.label}
-                    value={option.value}
-                    style={{
-                      color: isDark ? '#FFFFFF' : '#000000',
-                      backgroundColor: isDark ? '#1F2937' : '#FFFFFF',
-                    }}
-                  />
-                ))}
-              </Picker>
-            </View>
-          )}
+              {/*
+                The open popup is drawn with Android's own theme, which follows the
+                OS instead of the in-app toggle, so each row sets its background as
+                well as its text colour — colouring only the text leaves black on
+                black whenever the two disagree.
+              */}
+              {COUNTRIES.map((option) => (
+                <Picker.Item
+                  key={option.value || 'placeholder'}
+                  label={option.label}
+                  value={option.value}
+                  style={{
+                    color: isDark ? '#FFFFFF' : '#000000',
+                    backgroundColor: isDark ? '#1F2937' : '#FFFFFF',
+                  }}
+                />
+              ))}
+            </Picker>
+          </View>
 
           <View className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
             <ThemedText testID="form-selected-country" className="text-base font-medium">
