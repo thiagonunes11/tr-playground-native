@@ -83,6 +83,13 @@ export const DEMOS: Demo[] = [
     route: '/demos/form-inputs',
   },
   {
+    id: 'login-scenarios',
+    title: 'Login Scenarios',
+    description: 'Simple, 2-step, and hidden-form login flows with different button texts',
+    icon: 'people-outline',
+    route: '/demos/login-scenarios',
+  },
+  {
     id: 'dynamic-login',
     title: 'Dynamic Login Text',
     description: 'Login form with random button text',
