@@ -757,6 +757,65 @@ there instead of submitting, so the counter must not move while `Lines` does.
 }
 ```
 
+## Example: Login Scenarios Demo
+
+`app/demos/login-scenarios.tsx` is a hub that ports the web playground's
+[`/loginScenarios`](https://tr-playground.netlify.app/loginScenarios) page. Each
+card opens `app/demos/login-scenarios/[scenario].tsx`, driven by the
+`LOGIN_SCENARIOS` list in `constants/login-scenarios.ts`. Copy, button texts and
+validation messages match the web version character for character, so one
+testRigor test reads the same on web and native. Deliberate exception: wherever
+the web copy says "username" (scenario descriptions, the 2-step indicator), the
+native copy says "email", since the field is labelled Email — e.g.
+`Step 1 of 2 — enter your email.` (web: `enter your username.`).
+
+| Scenario | Flow | Submit button |
+|---|---|---|
+| Simple Login / Log In / Signin / Sign In | Email + Password on one screen | `Login` / `Log In` / `Signin` / `Sign In` |
+| 2-Step Login | Email → `Next` → `Signing in as <email>` + Password | `Login` |
+| Login without form | `You need to login to continue` + `Login` reveals the form | `Login` |
+
+Any well-formed email and any non-empty password succeed. Validation messages:
+`Email is required`, `Email must be a valid email address`, `Password is required`.
+Success shows `Login Successful` and `Signed in as <email>`.
+
+### Predictable content and testIDs
+
+| Element | `testID` |
+|---|---|
+| Scenario card on the hub | `demo-card-login-scenario-<slug>` |
+| Email / Password fields | `login-email-input` / `login-password-input` |
+| Field errors | `login-email-error` / `login-password-error` |
+| `Next` (2-step) | `login-next-button` |
+| Submit button | `login-submit-button` |
+| Gate button (without form) | `login-gate-button` |
+| Success panel / text | `login-success` / `login-signed-in-as` |
+| Back to all flows | `login-back-to-flows` |
+
+### Sample testRigor flow
+
+```
+click "2-Step Login"
+enter "user@example.com" into "Email"
+click "Next"
+check that page contains "Signing in as user@example.com"
+enter "secret" into "Password"
+click "Login"
+check that page contains "Login Successful"
+```
+
+### Implementation notes
+
+- Unlike the web version, the flow stays on one screen: steps and the success
+  state swap in place instead of navigating to `/password` or `/success`.
+- Enter/Return on Email moves to Password (or submits step 1); Enter on
+  Password submits.
+- Coloured text (errors, success, button labels) uses plain `Text`, not
+  `ThemedText`: `ThemedText` sets an inline theme colour that overrides
+  NativeWind colour classes.
+- To add a scenario, append to `LOGIN_SCENARIOS`; no route registration is
+  needed beyond the existing `demos/login-scenarios/[scenario]` screen.
+
 ## Additional Resources
 
 - [Expo Router Documentation](https://docs.expo.dev/router/introduction/)

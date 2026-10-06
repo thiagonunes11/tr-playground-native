@@ -33,6 +33,9 @@ export default function RootLayout() {
             />
           ))}
 
+          {/* One screen per login flow; it sets its own title from the scenario */}
+          <Stack.Screen name="demos/login-scenarios/[scenario]" options={demoScreenOptions} />
+
           {/* Reachable only through a deep link, so it is intentionally absent from DEMOS */}
           <Stack.Screen
             name="demos/deep-link"
